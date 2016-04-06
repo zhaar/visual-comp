@@ -147,21 +147,56 @@ void settings() {
   size(1000, 1000, P2D);
 }
 void setup() {}
+
+float angleX = PI/8;
+float angleY = PI/8;
+float translateX = 200;
+float translateY = 200;
+float scale = 2;
+
+void keyPressed() {
+  if (key == CODED) {
+    if (keyCode == UP) {
+      angleX += PI/8;
+    } else if (keyCode == DOWN) {
+      angleX -= PI/8;
+    } else if (keyCode == RIGHT) {
+      angleY += PI/8;
+    } else if (keyCode == LEFT) {
+      angleY -= PI/8;
+    }
+  }
+}
+
+int mouseDragY;
+
+void mousePressed() {
+  mouseDragY = 0;  // The drag starts here
+}
+
+void mouseDragged() {
+  //mouseDragX += (mouseX - pmouseX);
+  mouseDragY = (mouseY - pmouseY);
+  scale += mouseDragY * 0.01f;
+}
+
+
 void draw() {
   background(255, 255, 255);
   My3DPoint eye = new My3DPoint(0, 0, -5000);
   My3DPoint origin = new My3DPoint(0, 0, 0);
   My3DBox input3DBox = new My3DBox(origin, 100, 150, 300);
+  
   //rotated around x
-  float[][] transform1 = rotateXMatrix(PI/8);
-  input3DBox = transformBox(input3DBox, transform1);
-  projectBox(eye, input3DBox).render();
-  //rotated and translated
-  float[][] transform2 = translationMatrix(200, 200, 0);
-  input3DBox = transformBox(input3DBox, transform2);
-  projectBox(eye, input3DBox).render();
+  float[][] rotateX = rotateXMatrix(angleX);
+  float[][] rotateY = rotateYMatrix(angleY);
+  input3DBox = transformBox(input3DBox, rotateX);
+  input3DBox = transformBox(input3DBox, rotateY);
+
+  float[][] translate = translationMatrix(450, 450, 0);
+  float[][] rotate = scaleMatrix(scale, scale, scale);
   //rotated, translated, and scaled
-  float[][] transform3 = scaleMatrix(2, 2, 2);
-  input3DBox = transformBox(input3DBox, transform3);
+  input3DBox = transformBox(input3DBox, rotate);
+  input3DBox = transformBox(input3DBox, translate);
   projectBox(eye, input3DBox).render();
 }
