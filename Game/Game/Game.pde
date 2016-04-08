@@ -22,9 +22,22 @@ interface Drawable {
 
 abstract class Entity implements Physical, Drawable { }
 public class Ball extends Entity {
-  float x, y, z;
+  private float x, y, z;
+  private final int size;
+  private PVector forces;
+  private float frictionFactor;
+  private PVector velocity;
+  
+  public Ball(int size) {
+    this.x = 0;
+    this.y = 0;
+    //this.z = 5;
+    this.size = size;
+  }
   void draw() {
-    
+    translate(x, y, z);
+    sphere(size);
+    translate(-x, -y, -z);
   }
   void setPositions(float x, float y, float z) {
      
@@ -39,8 +52,12 @@ public class GameState implements Drawable{
   private float inputFactorSpeed = 1f;
   private List<Entity> entities = new ArrayList<Entity>();
   private static final float scaleFactor = 0.01f;
+  private final Ball ball;
   
-  public GameState() {};
+  public GameState() {
+    ball = new Ball(20);
+    entities.add(new Ball(20));
+  };
  
   void updateSpeedFactor(float speed) {
     float amount = speed /10;
@@ -67,9 +84,7 @@ public class GameState implements Drawable{
     rotateZ(angleZ);
     box(300, 5, 300); 
     translate(-width/2, -height/2, 0);
-     textSize(30); 
-    fill(255, 0, 0); 
-    text("input speed " + inputFactorSpeed, 40, 40, -10);
+
   }
 }
 
