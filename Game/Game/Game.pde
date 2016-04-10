@@ -1,112 +1,96 @@
 void settings() {
-      size(500, 500, P3D);
+      size(600, 600, P3D);
 }
 
-GameState state;
+GameState state = new GameState(300);
+Ball ball = new Ball(20);
 
 void setup() {
-  state = new GameState();
   noStroke();
+  ball.setPosition(new PVector(150, 150));
+
 }
 
 import java.util.List;
 import java.util.ArrayList;
 
-interface Physical {
-  
-}
-
 interface Drawable {
   void draw();
 }
+//  void draw() {
+//    camera(width/2.0, height / 2.0, height/2.0 / tan(radians(30)), width/2.0, height/2.0, 0, 0, -1, 0);
+//    directionalLight(50, 100, 125, 0.5, -0.5, 0);
+//    ambientLight(102, 102, 102);
+//    background(200);
+//    translate(width/2, height/2, 0);
+//    rotateX(angleX);
+//    rotateY(angleY);
+//    rotateZ(angleZ);
+//    box(300, 5, 300); 
+//    translate(-width/2, -height/2, 0);
 
-abstract class Entity implements Physical, Drawable { }
-public class Ball extends Entity {
-  private float x, y, z;
-  private final int size;
-  private PVector forces;
-  private float frictionFactor;
-  private PVector velocity;
-  
-  public Ball(int size) {
-    this.x = 0;
-    this.y = 0;
-    //this.z = 5;
-    this.size = size;
-  }
-  void draw() {
-    translate(x, y, z);
-    sphere(size);
-    translate(-x, -y, -z);
-  }
-  void setPositions(float x, float y, float z) {
-     
-  }
-  
+final float gravityConstant = 1;
+
+PVector computeSpeedFromAngle(float x, float y) {
+  PVector gravityForce = new PVector();
+  gravityForce.x = sin(radians(x)) * gravityConstant;
+  gravityForce.y = sin(radians(y)) * gravityConstant; 
+  return gravityForce;
 }
 
-public class GameState implements Drawable{
-  private float angleX;
-  private float angleY;
-  private float angleZ;
-  private float inputFactorSpeed = 1f;
-  private List<Entity> entities = new ArrayList<Entity>();
-  private static final float scaleFactor = 0.01f;
-  private final Ball ball;
-  
-  public GameState() {
-    ball = new Ball(20);
-    entities.add(new Ball(20));
-  };
- 
-  void updateSpeedFactor(float speed) {
-    float amount = speed /10;
-    this.inputFactorSpeed = clamp(inputFactorSpeed + amount, 0.2, 1.5);
-  }
-  
-  List<Entity> getEntities() { return entities; }
-  float getAngleX() { return angleX; }
-  void setAngleX(float x) { this.angleX = x; }
-  float getAngleY() { return angleY; }
-  void setAngleY(float y) { this.angleY = y; }
-  float getAngleZ() { return angleZ; }
-  void setAngleZ(float z) { this.angleZ = z; }
-  float getSpeedFactor() { return inputFactorSpeed * scaleFactor; }
-      
-  void draw() {
-    camera(width/2.0, height / 2.0, height/2.0 / tan(radians(30)), width/2.0, height/2.0, 0, 0, -1, 0);
-    directionalLight(50, 100, 125, 0.5, -0.5, 0);
-    ambientLight(102, 102, 102);
-    background(200);
-    translate(width/2, height/2, 0);
-    rotateX(angleX);
-    rotateY(angleY);
-    rotateZ(angleZ);
-    box(300, 5, 300); 
-    translate(-width/2, -height/2, 0);
+PVector computeFriction(Ball b) {
+  float normalForce = 1;
+  float mu = 0.005;
+  float frictionMagnitude = normalForce * mu;
+  PVector friction = b.getVelocity();
+  friction.mult(-1);
+  friction.normalize();
+  friction.mult(frictionMagnitude);
+  return friction;
+}
 
+
+void applyForces(GameState s, Ball b) {
+  PVector friction = computeFriction(b);
+  b.setVelocity(b.getVelocity()
+    .add(computeSpeedFromAngle(s.getAngleX(), s.getAngleZ()))
+    .add(friction));
+  for (Cylinder e : s.objects) {
+    if (b.intersects(e)) {
+      println("original velocity: " + b.getVelocity());
+      println("bounced velocity: " + b.bounceOn(e));
+      b.setVelocity(b.bounceOn(e));
+    }
   }
 }
 
-GameState handleInput(GameState prevState) {
-  return prevState;
-}
-
-GameState handlePhysics(GameState prevState) {
-  
-  return prevState;  
-}
-
-void drawGame(GameState state) {
-  state.draw();
-  for (Entity e: state.getEntities()) {
-    e.draw();
+Ball updateBallState(GameState s, Ball b) {
+  if ( b.getPosition().x > s.boardSize) {
+    b.setPosX(s.boardSize);
+    b.invertXVelocity();
+  } else if (b.getPosition().x < 0) {
+    b.setPosX(0);
+    b.invertXVelocity();
+  } else if (b.getPosition().y > s.boardSize) {
+    b.setPosY(s.boardSize);
+    b.invertYVelocity();
+  } else if (b.getPosition().y < 0) {
+    b.setPosY(0);
+    b.invertYVelocity();
   }
+  b.setPosition(b.getPosition().add(b.getVelocity()));
+  return b;
 }
-
 
 void draw() {
-  drawGame(handlePhysics(state));
+  background(200);
+  
+  if (!state.editMode) {
+    applyForces(state, ball);
+    updateBallState(state, ball);
+    //b.draw();
+  }
+  state.draw(ball);
 }
 
 int mouseDragY, mouseDragX;
@@ -126,6 +110,18 @@ float clamp(float value, float min, float max) {
 void mouseWheel(MouseEvent event) {
   float e = event.getCount();
   state.updateSpeedFactor(e);
+}
+
+void keyPressed() {
+  if (keyCode == SHIFT) {
+    state.editMode = true;
+  }
+}
+
+void keyReleased() {
+  if (keyCode == SHIFT) {
+    state.editMode = false;
+  }
 }
 
 void mouseDragged() {

@@ -9,10 +9,14 @@ public class Ball {
   public Ball(int size) {
     this.size = size;
   }
-  void draw() {
+  void draw(int boardSize) {
     fill(255, 255, 255);
-    ellipse(position.x, position.y, size, size);
-  }
+    //ellipse(position.x, position.y, size, size);
+    pushMatrix();
+    translate(boardSize - position.y, size/2, position.x);
+    sphere(size);  
+    popMatrix();
+  }  
   
   void invertXVelocity() {
     this.velocity.x *= -1; 
@@ -41,7 +45,7 @@ public class Ball {
   }
 }
 
-public class Cylinder implements Drawable {
+public class Cylinder {
   private PVector position;
   public final float size;
   public Cylinder(float x, float y, float s) {
@@ -55,5 +59,9 @@ public class Cylinder implements Drawable {
   
   void draw() {
     fill(255, 30, 30);
-    ellipse(position.x, position.y, size, size);  
+    translate(position.x, 0, position.y);
+    sphere(size);  
+    translate(-position.x, 0,  -position.y);
+
   }
+}
