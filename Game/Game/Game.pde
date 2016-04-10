@@ -17,17 +17,10 @@ import java.util.ArrayList;
 interface Drawable {
   void draw();
 }
-//  void draw() {
-//    camera(width/2.0, height / 2.0, height/2.0 / tan(radians(30)), width/2.0, height/2.0, 0, 0, -1, 0);
-//    directionalLight(50, 100, 125, 0.5, -0.5, 0);
-//    ambientLight(102, 102, 102);
-//    background(200);
-//    translate(width/2, height/2, 0);
-//    rotateX(angleX);
-//    rotateY(angleY);
-//    rotateZ(angleZ);
-//    box(300, 5, 300); 
-//    translate(-width/2, -height/2, 0);
+
+boolean inInterval(float v, float min, float max) {
+  return min <= v && v <= max;
+}
 
 final float gravityConstant = 1;
 
@@ -49,7 +42,6 @@ PVector computeFriction(Ball b) {
   return friction;
 }
 
-
 void applyForces(GameState s, Ball b) {
   PVector friction = computeFriction(b);
   b.setVelocity(b.getVelocity()
@@ -57,8 +49,6 @@ void applyForces(GameState s, Ball b) {
     .add(friction));
   for (Cylinder e : s.objects) {
     if (b.intersects(e)) {
-      println("original velocity: " + b.getVelocity());
-      println("bounced velocity: " + b.bounceOn(e));
       b.setVelocity(b.bounceOn(e));
     }
   }
@@ -88,15 +78,40 @@ void draw() {
   if (!state.editMode) {
     applyForces(state, ball);
     updateBallState(state, ball);
-    //b.draw();
   }
   state.draw(ball);
+}
+
+void placeObject(GameState s, float x, float y) {
+  s.objects.add(new Cylinder(x, y, 30));
 }
 
 int mouseDragY, mouseDragX;
 
 void mousePressed() {
-  mouseDragX = mouseDragY = 0;  // The drag starts here
+  if (!state.editMode) {
+    mouseDragX = mouseDragY = 0;  // The drag starts here
+  } else {
+    //here we assume the board takes the entire frame
+    //float s =  height/2.0 / tan(radians(30));
+    //println("s : " + s);
+    //float xCoord = (mouseX * width / state.boardSize) - (width/2);
+    //float yCoord = (mouseY * height / state.boardSize) - (height/2);
+    //if (inInterval(xCoord, 0, state.boardSize) && inInterval(yCoord, 0, state.boardSize)) {
+    //  println("placing at x: " + xCoord);
+    //  println("placing at y: " + yCoord);
+    //  placeObject(state, xCoord/2, yCoord/2); 
+    //} else {
+    //  println(xCoord + ", " + yCoord + " not in interval");
+    //}
+    float yCoord = 2 * ((float)mouseX - (float)width/4f)/width;
+    float xCoord = 2 * ((float)mouseY - (float)height/4f)/height;
+    println("x: " + xCoord);
+    if (inInterval(xCoord, 0f, 1f) && inInterval(yCoord, 0, 1f)) {
+      placeObject(state, xCoord * state.boardSize, yCoord * state.boardSize); 
+    }
+
+  }
 }
 
 float clampAngle(float value) {
@@ -115,6 +130,10 @@ void mouseWheel(MouseEvent event) {
 void keyPressed() {
   if (keyCode == SHIFT) {
     state.editMode = true;
+  } else if (keyCode == BACKSPACE) {
+    state = new GameState(300);
+    ball = new Ball(20);
+    ball.setPosition(new PVector(150, 150));
   }
 }
 

@@ -2,19 +2,17 @@
 public class Ball {
   private PVector position = new PVector();
   private final int size;
-  private PVector forces = new PVector();
-  private float frictionFactor;
   private PVector velocity = new PVector(0,0);
   
   public Ball(int size) {
     this.size = size;
   }
-  void draw(int boardSize) {
-    fill(255, 255, 255);
-    //ellipse(position.x, position.y, size, size);
+  void draw(int board) {
+    //fill(255, 255, 255);
+    noStroke();
     pushMatrix();
-    translate(boardSize - position.y, size/2, position.x);
-    sphere(size);  
+    translate(board - position.y, size/2, position.x);
+    sphere(size/2f);  
     popMatrix();
   }  
   
@@ -46,22 +44,68 @@ public class Ball {
 }
 
 public class Cylinder {
+  private static final int cylinderResolution = 40;
+  private final PShape cylinder = createShape(GROUP);
+  private final int cHeight = 40;
   private PVector position;
   public final float size;
-  public Cylinder(float x, float y, float s) {
+  public Cylinder(float posX, float posY, float s) {
     this.size = s;
-    position = new PVector(x, y);
+    position = new PVector(posX, posY);
+    float angle;
+    float[] x = new float[cylinderResolution + 1];
+    float[] y = new float[cylinderResolution + 1];
+
+    //get the x and y position on a circle for all the sides
+    for (int i = 0; i < x.length; i++) {
+      angle = (TWO_PI / cylinderResolution) * i;
+      x[i] = sin(angle) * size/2;
+      y[i] = cos(angle) * size/2;
+    }
+
+    PShape side = createShape();
+    side.beginShape(QUAD_STRIP);
+    //draw the border of the cylinder
+    for (int i = 0; i < x.length; i++) {
+      side.vertex(x[i], y[i], 0);
+      side.vertex(x[i], y[i], cHeight);
+    }
+    side.endShape();
+
+    PShape bottom = createShape();
+    bottom.beginShape(TRIANGLE_FAN);
+    bottom.vertex(0, 0, 0);
+    for (int i = 0; i < x.length; i++) {
+      bottom.vertex(x[i], y[i], 0);
+    }
+    bottom.endShape();
+
+    PShape top = createShape();
+    top.beginShape(TRIANGLE_FAN);
+    top.vertex(0, 0, cHeight);
+    for (int i = 0; i < x.length; i++) {
+      top.vertex(x[i], y[i], cHeight);
+    }
+    top.endShape();
+
+    cylinder.addChild(side);
+    cylinder.addChild(top);
+    cylinder.addChild(bottom);
   }
   
   PVector getPosition() {
     return new PVector(position.x, position.y, position.z);
   }
-  
-  void draw() {
-    fill(255, 30, 30);
-    translate(position.x, 0, position.y);
-    sphere(size);  
-    translate(-position.x, 0,  -position.y);
 
+  
+  void draw(int board) {
+    //fill(255, 30, 30);
+    //stroke(150);
+    pushMatrix();
+    translate(board - position.y, 0, position.x);
+    rotateX(-PI/2);
+    shape(cylinder);
+    popMatrix();
+    //noStroke();
   }
 }

@@ -27,26 +27,31 @@ public class GameState {
   float getSpeedFactor() { return inputFactorSpeed * scaleFactor; }
   
   void draw(Ball b) {
-    if (editMode) {
-      camera(width/2.0, height / 2.0, height/2.0 / tan(radians(90)), width/2.0, height/2.0, 0, 0, -1, 0);
-    } else {
-      camera(width/2.0, height / 2.0, height/2.0 / tan(radians(30)), width/2.0, height/2.0, 0, 0, -1, 0);
-    }
+    camera(width/2.0, height / 2.0, height/2.0 / tan(radians(30)), width/2.0, height/2.0, 0, 0, -1, 0);
     directionalLight(50, 100, 125, 0.5, -0.5, 0);
     ambientLight(102, 102, 102);
-    pushMatrix();
+    background(200);
     translate(width/2, height/2, 0);
-    rotateX(angleX);
-    rotateY(angleY);
-    rotateZ(angleZ);
-    box(boardSize, 5, boardSize); 
-    translate(-boardSize/2, 5, -boardSize/2);
+
+    noStroke();
     if (!editMode) {
-      b.draw(boardSize);     
+      rotateX(angleX);
+      rotateZ(angleZ);
+    } else {
+      rotateX(radians(90));
     }
+    
+
+    box(boardSize, 5, boardSize); 
+    pushMatrix();
+    translate(-boardSize/2, 5, -boardSize/2);
+    b.draw(boardSize);     
+    
     for (Cylinder e : objects) {
-      e.draw(); 
+      e.draw(boardSize); 
     }
     popMatrix();
+    //popMatrix();
+
   }
 }
