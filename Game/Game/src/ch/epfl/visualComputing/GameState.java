@@ -28,7 +28,7 @@ public class GameState {
 
     void updateSpeedFactor(float speed) {
         float amount = speed /10;
-        this.inputFactorSpeed = Game.clamp(inputFactorSpeed + amount, 0.2f, 1.5f);
+        this.inputFactorSpeed = PhysicsEngine.clamp(inputFactorSpeed + amount, 0.2f, 1.5f);
     }
 
     float getAngleX() { return angleX; }
@@ -41,8 +41,8 @@ public class GameState {
 
     void draw(PApplet ctx) {
         if (!editMode) {
-            Game.applyForces(this, ball);
-            Game.updateBallState(this, ball);
+            PhysicsEngine.applyForces(this, ball);
+            PhysicsEngine.updateBallState(this, ball);
         }
         ctx.camera(ctx.width/2.0f, ctx.height / 2.0f, ctx.height/2.0f / PApplet.tan(PApplet.radians(30f)), ctx.width/2.0f, ctx.height/2.0f, 0, 0, -1, 0);
         ctx.directionalLight(50, 100, 125, 0.5f, -0.5f, 0);
