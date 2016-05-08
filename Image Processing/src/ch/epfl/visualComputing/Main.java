@@ -1,7 +1,10 @@
 package ch.epfl.visualComputing;
 
-/**
- * Created by zephyz on 07/05/16.
- */
+import processing.core.PApplet;
+
 public class Main {
+
+    public static void main(String args[]) {
+        PApplet.main(new String[] { "ch.epfl.visualComputing.ImageProcessing" });
+    }
 }
