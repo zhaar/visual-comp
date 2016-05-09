@@ -3,9 +3,9 @@ package ch.epfl.visualComputing;
 import processing.core.PApplet;
 import processing.core.PImage;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 public class ImageProcessing extends PApplet {
 
@@ -25,12 +25,15 @@ public class ImageProcessing extends PApplet {
     }
 
     public PImage computeImage(PImage img) {
+        int[][] gaussianMatrix = {{9, 12, 9},
+                {12, 15, 12},
+                {9, 12, 9}};
+        int[][] idMatrix = {{0,0,0}, {0,0,1}, {0,0,0}};
         PImage result = createImage(img.width, img.height, RGB);
-        List<Float> transformed = Threshold.Binary(128, 255).transform(
+        ImageTransformation.Convolution c = new ImageTransformation.Convolution(gaussianMatrix, 3);
+        List<Float> transformed = new ImageTransformation<>(c.toGeneric(img.width, img.height)).transform(
                 DepressingJava.toIntList(img.pixels)
-                        .stream()
-                        .map(this::brightness)
-                        .collect(Collectors.toList()));
+                        .stream().map(this::brightness).collect(Collectors.toList()));
         return applyImage(transformed, result);
     }
 
