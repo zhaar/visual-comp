@@ -5,6 +5,7 @@ import processing.core.PImage;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 
 public class ImageProcessing extends PApplet {
@@ -25,16 +26,24 @@ public class ImageProcessing extends PApplet {
     }
 
     public PImage computeImage(PImage img) {
-        int[][] gaussianMatrix = {{9, 12, 9},
-                {12, 15, 12},
-                {9, 12, 9}};
-        int[][] idMatrix = {{0,0,0}, {0,0,1}, {0,0,0}};
-        PImage result = createImage(img.width, img.height, RGB);
-        ImageTransformation.Convolution c = new ImageTransformation.Convolution(gaussianMatrix, 3);
-        List<Float> transformed = new ImageTransformation<>(c.toGeneric(img.width, img.height)).transform(
-                DepressingJava.toIntList(img.pixels)
-                        .stream().map(this::brightness).collect(Collectors.toList()));
-        return applyImage(transformed, result);
+
+        PImage buffer = createImage(img.width, img.height, RGB);
+
+        int[][] hSobel = {{0,1,0}, {0,0,0}, {0,-1,0}};
+        int[][] vSobel = {{0,0,0}, {1,0,-1}, {0,0,0}};
+        List<Float> sourceBrightness = DepressingJava.toIntList(img.pixels)
+                .stream().map(this::brightness).collect(Collectors.toList());
+
+
+        List<Float> vertical = ImageTransformation.convolutionTransformation(vSobel, 3, img.width, img.height).transform(sourceBrightness);
+        List<Float> horizontal = ImageTransformation.convolutionTransformation(hSobel, 3, img.width, img.height).transform(sourceBrightness);
+        List<Float> sobeled = IntStream.range(0, horizontal.size())
+                .mapToObj(i -> PApplet.sqrt(PApplet.pow(vertical.get(i), 2) + PApplet.pow(horizontal.get(i), 2)))
+                .collect(Collectors.toList());
+        float max = sobeled.stream().max((l, r) -> l < r ? -1 : 1).get();
+//        System.out.println("max: " + max);
+        sobeled = sobeled.stream().map(v -> v > max * 0.25f ? 255f : 0f).collect(Collectors.toList());
+        return applyImage(sobeled, buffer);
     }
 
     public PImage applyImage(List<Float> pixels, PImage buffer) {

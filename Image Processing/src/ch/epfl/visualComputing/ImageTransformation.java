@@ -28,6 +28,13 @@ public class ImageTransformation<Pixel> {
             this.kernel = kernel;
             this.size = mSize;
             this.weight = w;
+            System.out.println("weight: " + w);
+        }
+
+        public Convolution(int[][] kernel, int mSize, int weight) {
+            this.kernel = kernel;
+            this.size = mSize;
+            this.weight = weight;
         }
 
         public GenericTransformation<Float> toGeneric(int imageWidth, int imageHeight) {
@@ -66,8 +73,12 @@ public class ImageTransformation<Pixel> {
         this.transform = trs;
     }
 
+    public static ImageTransformation<Float> convolutionTransformation(int[][] matrix, int size, int w, int h) {
+        return new ImageTransformation<>(new Convolution(matrix, size, 1).toGeneric(w, h));
+    }
+
     public List<Pixel> transform(List<Pixel> source) {
-        return IntStream.range(0, source.size())
+        return IntStream.range(0, source.size()).parallel()
                 .mapToObj((i) -> transform.apply(i, source.get(i), source))
                 .collect(Collectors.toList());
     }
