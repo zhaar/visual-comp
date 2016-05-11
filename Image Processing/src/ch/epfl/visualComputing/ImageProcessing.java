@@ -35,11 +35,12 @@ public class ImageProcessing extends PApplet {
                 .stream().map(this::brightness).collect(Collectors.toList());
 
 
-        List<Float> vertical = ImageTransformation.convolutionTransformation(vSobel, 3, img.width, img.height).transform(sourceBrightness);
-        List<Float> horizontal = ImageTransformation.convolutionTransformation(hSobel, 3, img.width, img.height).transform(sourceBrightness);
-        List<Float> sobeled = IntStream.range(0, horizontal.size())
-                .mapToObj(i -> PApplet.sqrt(PApplet.pow(vertical.get(i), 2) + PApplet.pow(horizontal.get(i), 2)))
-                .collect(Collectors.toList());
+        ImageTransformation<Float, Float> vertical = ImageTransformation.convolutionTransformation(vSobel, 3, img.width, img.height);
+        ImageTransformation<Float, Float> horizontal = ImageTransformation.convolutionTransformation(hSobel, 3, img.width, img.height);
+//        List<Float> sobeled = IntStream.range(0, horizontal.size())
+//                .mapToObj(i -> PApplet.sqrt(PApplet.pow(vertical.get(i), 2) + PApplet.pow(horizontal.get(i), 2)))
+//                .collect(Collectors.toList());
+        List<Float> sobeled = vertical.mergeTransforms(horizontal, (v, h) -> PApplet.sqrt(PApplet.pow(h, 2) + PApplet.pow(v, 2))).transform(sourceBrightness);
         float max = sobeled.stream().max((l, r) -> l < r ? -1 : 1).get();
         sobeled = sobeled.stream().map(v -> v > max * 0.25f ? 255f : 0f).collect(Collectors.toList());
         return applyImage(sobeled, buffer);

@@ -3,6 +3,9 @@ package ch.epfl.visualComputing;
 import ch.epfl.visualComputing.Transformations.Convolution;
 
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -34,6 +37,14 @@ public class ImageTransformation<Pixel, Transformed> {
 
     public static ImageTransformation<Float, Float> convolutionTransformation(int[][] matrix, int size, int w, int h) {
         return new ImageTransformation<>(new Convolution(matrix, size, 1).toGeneric(w, h));
+    }
+
+//    public <T> ImageTransformation<Pixel, T>composeWith(ImageTransformation<Transformed, T> ts) {
+//        return new ImageTransformation<Pixel, T>((i, p, ls) -> );
+//    }
+
+    public <T> ImageTransformation<Pixel, T> mergeTransforms(ImageTransformation<Pixel, Transformed> that, BiFunction<Transformed, Transformed, T> merger) {
+        return new ImageTransformation<Pixel, T>((i, p, ls) -> merger.apply(this.transform.apply(i, p, ls), that.transform.apply(i, p, ls)));
     }
 
     public List<Transformed> transform(List<Pixel> source) {
