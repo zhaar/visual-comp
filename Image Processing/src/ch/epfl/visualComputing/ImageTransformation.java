@@ -1,85 +1,45 @@
 package ch.epfl.visualComputing;
 
+import ch.epfl.visualComputing.Transformations.Convolution;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class ImageTransformation<Pixel> {
+public class ImageTransformation<Pixel, Transformed> {
 
     @FunctionalInterface
-    public interface PixelTransformation<T> {
-        T apply(T pixel);
-        default GenericTransformation<T> toGeneric() {
+    public interface PixelTransformation<T, S> {
+        S apply(T pixel);
+        default GenericTransformation<T, S> toGeneric() {
             return (index, pixel, image) -> PixelTransformation.this.apply(pixel);
         }
     }
 
-    public static class Convolution {
-
-        private final int size;
-        private final int[][] kernel;
-        private final float weight;
-
-        public Convolution(int[][] kernel, int mSize) {
-            int w = IntStream.range(0,mSize)
-                    .map(i -> IntStream.range(0, mSize)
-                            .reduce(0, (a, j) -> a + kernel[i][j]))
-                    .reduce(0, (l, r) -> l + r);
-            this.kernel = kernel;
-            this.size = mSize;
-            this.weight = w;
-            System.out.println("weight: " + w);
-        }
-
-        public Convolution(int[][] kernel, int mSize, int weight) {
-            this.kernel = kernel;
-            this.size = mSize;
-            this.weight = weight;
-        }
-
-        public GenericTransformation<Float> toGeneric(int imageWidth, int imageHeight) {
-            return (index, pixel, image) -> {
-                int x = index % imageWidth;
-                int y = index / imageWidth;
-
-                int sum = 0;
-
-                for (int i = 0; i < size; i++) {
-                    for (int j = 0; j < size; j++) {
-                        int ix = x + i - size/2;
-                        int iy = y + j - size/2;
-                        float arrayValue = DepressingJava.get2D(ix, iy, image, imageWidth, imageHeight, 0f);
-                        float prod = kernel[i][j] * arrayValue;
-                        sum += prod;
-                    }
-                }
-                return sum/weight;
-            };
-        }
-    }
-
     @FunctionalInterface
-    public interface GenericTransformation<T> {
-        T apply(int index, T pixel, List<T> image);
+    public interface GenericTransformation<T, S> {
+        S apply(int index, T pixel, List<T> image);
     }
 
-    private final GenericTransformation<Pixel> transform;
+    private final GenericTransformation<Pixel, Transformed> transform;
 
-    public ImageTransformation(PixelTransformation<Pixel> px) {
+    public ImageTransformation(PixelTransformation<Pixel, Transformed> px) {
         this.transform = px.toGeneric();
     }
 
-    public ImageTransformation(GenericTransformation<Pixel> trs) {
+    public ImageTransformation(GenericTransformation<Pixel, Transformed> trs) {
         this.transform = trs;
     }
 
-    public static ImageTransformation<Float> convolutionTransformation(int[][] matrix, int size, int w, int h) {
+
+    public static ImageTransformation<Float, Float> convolutionTransformation(int[][] matrix, int size, int w, int h) {
         return new ImageTransformation<>(new Convolution(matrix, size, 1).toGeneric(w, h));
     }
 
-    public List<Pixel> transform(List<Pixel> source) {
+    public List<Transformed> transform(List<Pixel> source) {
         return IntStream.range(0, source.size()).parallel()
                 .mapToObj((i) -> transform.apply(i, source.get(i), source))
                 .collect(Collectors.toList());
     }
+
 }

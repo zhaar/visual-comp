@@ -41,7 +41,6 @@ public class ImageProcessing extends PApplet {
                 .mapToObj(i -> PApplet.sqrt(PApplet.pow(vertical.get(i), 2) + PApplet.pow(horizontal.get(i), 2)))
                 .collect(Collectors.toList());
         float max = sobeled.stream().max((l, r) -> l < r ? -1 : 1).get();
-//        System.out.println("max: " + max);
         sobeled = sobeled.stream().map(v -> v > max * 0.25f ? 255f : 0f).collect(Collectors.toList());
         return applyImage(sobeled, buffer);
     }
