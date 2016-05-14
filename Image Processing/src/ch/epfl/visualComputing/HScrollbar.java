@@ -42,12 +42,7 @@ class HScrollbar {
      * @brief Updates the state of the scrollbar according to the mouse movement
      */
     void update() {
-        if (isMouseOver()) {
-            mouseOver = true;
-        }
-        else {
-            mouseOver = false;
-        }
+        mouseOver = isMouseOver();
         if (ctx.mousePressed && mouseOver) {
             locked = true;
         }
@@ -57,7 +52,7 @@ class HScrollbar {
         if (locked) {
             newSliderPosition = constrain(ctx.mouseX - barHeight/2, sliderPositionMin, sliderPositionMax);
         }
-        if (ctx.abs(newSliderPosition - sliderPosition) > 1) {
+        if (PApplet.abs(newSliderPosition - sliderPosition) > 1) {
             sliderPosition = sliderPosition + (newSliderPosition - sliderPosition);
         }
     }
@@ -81,13 +76,8 @@ class HScrollbar {
      * @return Whether the mouse is hovering the scrollbar
      */
     boolean isMouseOver() {
-        if (ctx.mouseX > xPosition && ctx.mouseX < xPosition+barWidth &&
-                ctx.mouseY > yPosition && ctx.mouseY < yPosition+barHeight) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return ctx.mouseX > xPosition && ctx.mouseX < xPosition + barWidth &&
+                ctx.mouseY > yPosition && ctx.mouseY < yPosition + barHeight;
     }
 
     /**
