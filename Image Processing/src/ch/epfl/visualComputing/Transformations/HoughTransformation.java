@@ -35,15 +35,13 @@ public class HoughTransformation implements Function<List<Float>, Triple<List<In
             cosTable[angle] = (float) Math.cos(PConstants.PI * angle / phiDim);
         }
 
-        ArrayData acc = new ArrayData(rDim + 2, phiDim + 2);
-        List<Integer> accumulator = new ArrayList<>((phiDim) * (rDim));
+        HoughAccumulator acc = new HoughAccumulator(rDim, phiDim);
         range(0, height).boxed().forEach(y -> range(0, width).forEach(x -> {
             if (DepressingJava.get2D(x, y, source, width, height, 0f) != 0) {
                 range(0, phiDim).forEach(phi -> {
                     float r = x * cosTable[phi] + y * sinTable[phi];
                     int normalized = Math.round((r + acc.radius) / 2);
                     acc.accumulate(normalized, phi, 1);
-
                 });
             }
         }));
@@ -56,16 +54,16 @@ public class HoughTransformation implements Function<List<Float>, Triple<List<In
         return new Triple<>(transformed, phiDim, rDim);
     }
 
-    public static class ArrayData {
+    public static class HoughAccumulator {
         public final int[] dataArray;
         public final int radius;
         public final int angle;
 
-        public ArrayData(int radius, int angle) {
+        public HoughAccumulator(int radius, int angle) {
             this(new int[radius * angle], radius, angle);
         }
 
-        private ArrayData(int[] dataArray, int radius, int angle) {
+        private HoughAccumulator(int[] dataArray, int radius, int angle) {
             this.dataArray = dataArray;
             this.radius = radius;
             this.angle = angle;
