@@ -1,8 +1,14 @@
 package ch.epfl.visualComputing.Transformations;
 
-import ch.epfl.visualComputing.DepressingJava;
+import ch.epfl.visualComputing.CopeOut.DepressingJava;
+import ch.epfl.visualComputing.CopeOut.MyList;
+import ch.epfl.visualComputing.CopeOut.Pair;
 import ch.epfl.visualComputing.ImageTransformation;
+import processing.core.PApplet;
 
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Convolution {
@@ -47,4 +53,24 @@ public class Convolution {
             return sum/weight;
         };
     }
+
+    private static final int[][] defaultGaussianMatrix = {{9, 12, 9}, {12, 15, 12}, {9, 12, 9}};
+
+    public static ImageTransformation<Float, Float> gaussianBlur(int width, int height) {
+        return new ImageTransformation<>(new Convolution(defaultGaussianMatrix, 3, 99).toGeneric(width, height));
+    }
+
+    public static Function<List<Float>, List<Float>> sobelDoubleConvolution(int width, int height) {
+
+        int[][] hSobel = {{0,1,0}, {0,0,0}, {0,-1,0}};
+        int[][] vSobel = {{0,0,0}, {1,0,-1}, {0,0,0}};
+        ImageTransformation<Float, Float> vertical = ImageTransformation.convolutionTransformation(vSobel, 3, width, height);
+        ImageTransformation<Float, Float> horizontal = ImageTransformation.convolutionTransformation(hSobel, 3, width, height);
+        return vertical.mergeWith(horizontal, MyList::zip)
+                .andThen(ls -> ls.parallelStream().map(Convolution::distance).collect(Collectors.toList()));
+    }
+
+    private static float distance(Pair<Float, Float> p) { return PApplet.sqrt(PApplet.pow(p._1(), 2) + PApplet.pow(p._2(), 2)); }
+
+
 }
