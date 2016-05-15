@@ -21,7 +21,7 @@ public class ImageProcessing extends PApplet {
     HScrollbar lowerThreshold = new HScrollbar(this, 0, 15, 800, 12);
 
     public void settings() {
-        size(1200, 400);
+        size(800, 800);
     }
 
     public void setup() {
@@ -37,7 +37,7 @@ public class ImageProcessing extends PApplet {
 
     public void computeImage(PImage img) {
 
-        image(img,0, 0, 400, 400);
+        image(img,0, 0);
         List<Float> sourceBrightness = DepressingJava.toIntList(img.pixels)
                 .stream().map(this::brightness).collect(Collectors.toList());
         Convolution.gaussianBlur(img.width, img.height)
@@ -45,6 +45,7 @@ public class ImageProcessing extends PApplet {
                 .andThen(Convolution.sobelDoubleConvolution(img.width, img.height))
                 .andThen(new HoughTransformation(0.06f, 2.5f, img.width, img.height))
                 .andThen(DrawEffects.drawHough(this))
+                .andThen(DrawEffects.drawLines(this, img.width, 400))
                 .apply(sourceBrightness);
     }
 
