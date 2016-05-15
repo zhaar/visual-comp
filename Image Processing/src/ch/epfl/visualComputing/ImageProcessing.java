@@ -3,8 +3,7 @@ package ch.epfl.visualComputing;
 import ch.epfl.visualComputing.CopeOut.DepressingJava;
 import ch.epfl.visualComputing.CopeOut.Triple;
 import ch.epfl.visualComputing.Transformations.Convolution;
-import ch.epfl.visualComputing.Transformations.Effects.DrawHoughAccumulator;
-import ch.epfl.visualComputing.Transformations.Effects.EffectFunction;
+import ch.epfl.visualComputing.Transformations.Effects.DrawEffects;
 import ch.epfl.visualComputing.Transformations.HoughTransformation;
 import ch.epfl.visualComputing.Transformations.PixelTransformer;
 import processing.core.PApplet;
@@ -41,11 +40,11 @@ public class ImageProcessing extends PApplet {
         image(img,0, 0, 400, 400);
         List<Float> sourceBrightness = DepressingJava.toIntList(img.pixels)
                 .stream().map(this::brightness).collect(Collectors.toList());
-        Triple<List<Integer>, Integer, Integer> processed = Convolution.gaussianBlur(img.width, img.height)
+        Convolution.gaussianBlur(img.width, img.height)
                 .andThen(new PixelTransformer<>(p -> Float.compare(p, 128) < 0 ? 250f : 0f))
                 .andThen(Convolution.sobelDoubleConvolution(img.width, img.height))
                 .andThen(new HoughTransformation(0.06f, 2.5f, img.width, img.height))
-                .andThen(DrawHoughAccumulator.drawHough(this))
+                .andThen(DrawEffects.drawHough(this))
                 .apply(sourceBrightness);
     }
 

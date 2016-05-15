@@ -5,12 +5,13 @@ import ch.epfl.visualComputing.CopeOut.Triple;
 import processing.core.PConstants;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
 import static java.util.stream.IntStream.range;
 
-public class HoughTransformation implements Function<List<Float>, Triple<List<Integer>, Integer, Integer>> {
+public class HoughTransformation implements Function<List<Float>, HoughTransformation.HoughAccumulator> {
 
     private final Float phi, r;
     private final Integer width, height;
@@ -26,7 +27,7 @@ public class HoughTransformation implements Function<List<Float>, Triple<List<In
         this.rDim = (int) (((width + height) * 2 + 1) / r);
     }
 
-    private List<Integer> transform(List<Float> source) {
+    private HoughAccumulator transform(List<Float> source) {
 
         float[] sinTable = new float[phiDim];
         float[] cosTable = new float[phiDim];
@@ -45,40 +46,42 @@ public class HoughTransformation implements Function<List<Float>, Triple<List<In
                 });
             }
         }));
-        return DepressingJava.toIntList(acc.dataArray);
+        return acc;
     }
 
     @Override
-    public Triple<List<Integer>, Integer, Integer> apply(List<Float> source) {
-        List<Integer> transformed = this.transform(source);
-        return new Triple<>(transformed, phiDim, rDim);
+    public HoughAccumulator apply(List<Float> source) {
+        return this.transform(source);
     }
 
     public static class HoughAccumulator {
-        public final int[] dataArray;
+        public final List<Integer> dataArray;
         public final int radius;
         public final int angle;
 
         public HoughAccumulator(int radius, int angle) {
-            this(new int[radius * angle], radius, angle);
-        }
-
-        private HoughAccumulator(int[] dataArray, int radius, int angle) {
-            this.dataArray = dataArray;
+            this.dataArray = new ArrayList<>(Collections.nCopies(radius * angle, 0));
             this.radius = radius;
             this.angle = angle;
         }
 
+//        private HoughAccumulator(int[] dataArray, int radius, int angle) {
+//            this.dataArray = dataArray;
+//            this.radius = radius;
+//            this.angle = angle;
+//        }
+
         public int get(int r, int phi) {
-            return dataArray[phi * radius + r];
+            return dataArray.get(phi * radius + r);
         }
 
         public void set(int r, int phi, int value) {
-            dataArray[phi * radius + r] = value;
+            dataArray.set(phi * radius + r, value);
         }
 
         public void accumulate(int r, int phi, int delta) {
-            dataArray[phi * radius + r] += delta;
+            int index = phi * radius + r;
+            dataArray.set(index, dataArray.get(index) + delta);
         }
     }
 }
