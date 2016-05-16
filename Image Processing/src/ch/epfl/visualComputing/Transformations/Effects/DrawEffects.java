@@ -23,6 +23,14 @@ public class DrawEffects {
         return buffer;
     }
 
+    public static PImage applyImageInt(List<Integer> pixels, PImage buffer, PApplet ctx) {
+        for (int i = 0; i < buffer.pixels.length; i++) {
+            buffer.pixels[i] = ctx.color(pixels.get(i));
+        }
+        buffer.updatePixels();
+        return buffer;
+    }
+
     public static EffectFunction<List<Float>> drawPixels(PApplet ctx, PImage buffer, int x, int y) {
         return new EffectFunction<>(ls -> {
             applyImage(ls, buffer, ctx);
@@ -31,19 +39,19 @@ public class DrawEffects {
         );
     }
 
-//    public static EffectFunction<HoughTransformation.HoughAccumulator> drawHough(PApplet ctx) {
-//        return new EffectFunction<>(t -> {
-//            PImage houghed = ctx.createImage(t.radius, t.angle, PConstants.RGB);
-//            PImage result = applyImage(t.dataArray, houghed, ctx);
-//            result.resize(400, 400);
-//            result.updatePixels();
-//            ctx.image(result, 400,0);
-//        });
-//    }
+    public static EffectFunction<HoughTransformation.HoughAccumulator> drawHough(PApplet ctx) {
+        return new EffectFunction<>(t -> {
+            PImage houghed = ctx.createImage(t.radius, t.angle, PConstants.RGB);
+            PImage result = applyImageInt(t.dataArray, houghed, ctx);
+            result.resize(400, 400);
+            result.updatePixels();
+            ctx.image(result, 400,0);
+        });
+    }
 
-    public static EffectFunction<HoughTransformation.HoughAccumulator> drawLines(PApplet ctx, int left,  int width) {
+    public static EffectFunction<HoughTransformation.HoughAccumulator> drawLines(PApplet ctx, int left,  int width, int minVotes) {
         return new EffectFunction<>(hough -> {
-            MyList.zipWithIndex(hough.dataArray).stream().filter(p -> p._1() > 400).forEach(p -> {
+            MyList.zipWithIndex(hough.dataArray).stream().filter(p -> p._1() > minVotes).forEach(p -> {
                 int idx = p._2();
                 int rDim = hough.radius;
                 float discretizationStepsR = hough.rStep;

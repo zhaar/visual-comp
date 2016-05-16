@@ -3,6 +3,7 @@ package ch.epfl.visualComputing;
 import ch.epfl.visualComputing.CopeOut.DepressingJava;
 import ch.epfl.visualComputing.Transformations.*;
 import ch.epfl.visualComputing.Transformations.Effects.DrawEffects;
+import ch.epfl.visualComputing.Transformations.Effects.EffectFunction;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.video.Capture;
