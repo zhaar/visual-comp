@@ -1,7 +1,6 @@
 package ch.epfl.visualComputing.CopeOut;
 
-import ch.epfl.visualComputing.CopeOut.Pair;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -16,5 +15,11 @@ public class MyList {
 
     public static <T> List<Pair<T, Integer>> zipWithIndex(List<T> xs) {
         return zip(xs, IntStream.range(0, xs.size()).boxed().collect(Collectors.toList()));
+    }
+
+    public static <T> List<T> take(List<T> xs, int n) {
+        List<T> ys = new ArrayList<>(n);
+        for (int i = 0; i < Math.min(n, xs.size()); i++) ys.add(xs.get(i));
+        return ys;
     }
 }
