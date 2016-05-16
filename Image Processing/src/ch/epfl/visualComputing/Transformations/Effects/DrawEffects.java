@@ -14,9 +14,18 @@ public class DrawEffects {
 
     private DrawEffects() {}
 
+
+    public static PImage applyImage(List<Integer> pixels, PImage buffer, PApplet ctx) {
+        for (int i = 0; i < buffer.pixels.length; i++) {
+            buffer.pixels[i] = pixels.get(i);
+        }
+        buffer.updatePixels();
+        return buffer;
+    }
+
     public static EffectFunction<List<Integer>> drawPixels(PApplet ctx, PImage buffer, int x, int y) {
         return new EffectFunction<>(ls -> {
-            ImageProcessing.applyImage(ls, buffer, ctx);
+            applyImage(ls, buffer, ctx);
             ctx.image(buffer, x, y);
             }
         );
@@ -25,7 +34,7 @@ public class DrawEffects {
     public static EffectFunction<HoughTransformation.HoughAccumulator> drawHough(PApplet ctx) {
         return new EffectFunction<>(t -> {
             PImage houghed = ctx.createImage(t.radius, t.angle, PConstants.RGB);
-            PImage result = ImageProcessing.applyImage(t.dataArray, houghed, ctx);
+            PImage result = applyImage(t.dataArray, houghed, ctx);
             result.resize(400, 400);
             result.updatePixels();
             ctx.image(result, 400,0);
