@@ -18,7 +18,7 @@ public class ImageProcessing extends PApplet {
     PImage img;
     Capture cam;
 
-    private static final boolean webcam = true;
+    private static final boolean webcam = false;
 
     HScrollbar upperThreshold = new HScrollbar(this, 0, 0, 800, 12);
     HScrollbar lowerThreshold = new HScrollbar(this, 0, 15, 800, 12);
