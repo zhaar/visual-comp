@@ -1,7 +1,7 @@
 package ch.epfl.visualComputing.Transformations;
 
 import ch.epfl.visualComputing.CopeOut.DepressingJava;
-import ch.epfl.visualComputing.CopeOut.Triple;
+import ch.epfl.visualComputing.CopeOut.Pair;
 import processing.core.PConstants;
 
 import java.util.ArrayList;
@@ -54,6 +54,7 @@ public class HoughTransformation implements Function<List<Float>, HoughTransform
         return this.transform(source);
     }
 
+    //Accumulator of size radius x angle
     public static class HoughAccumulator {
         public final List<Integer> dataArray;
         public final int radius;
@@ -69,14 +70,17 @@ public class HoughTransformation implements Function<List<Float>, HoughTransform
             this.rStep = rStep;
         }
 
-//        private HoughAccumulator(int[] dataArray, int radius, int angle) {
-//            this.dataArray = dataArray;
-//            this.radius = radius;
-//            this.angle = angle;
-//        }
+        //(radius, angle)
+        public Pair<Integer, Integer> convertIndex(int i) {
+            return new Pair<>(i % radius, i / radius);
+        }
 
         public int get(int r, int phi) {
             return dataArray.get(phi * radius + r);
+        }
+
+        public int getDefault(int r, int phi, int def) {
+            return DepressingJava.get2D(r, phi, dataArray, radius, angle, def);
         }
 
         public void set(int r, int phi, int value) {
