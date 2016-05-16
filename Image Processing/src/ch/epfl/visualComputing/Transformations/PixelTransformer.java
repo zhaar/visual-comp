@@ -15,6 +15,6 @@ public class PixelTransformer<P, T> implements TransformationFunction<List<P>, L
 
     @Override
     public List<T> apply(List<P> source) {
-        return source.parallelStream().map(transfomer::apply).collect(Collectors.toList());
+        return source.stream().map(transfomer::apply).collect(Collectors.toList());
     }
 }

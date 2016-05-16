@@ -8,14 +8,15 @@ import processing.core.PImage;
 import processing.video.Capture;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 
 public class ImageProcessing extends PApplet {
 
     PImage img;
     Capture cam;
-    PImage buffer;
+    PImage buffer1;
+    PImage buffer2;
 
 
     private static final boolean webcam = false;
@@ -43,7 +44,7 @@ public class ImageProcessing extends PApplet {
             }
         } else {
             img = loadImage("board1.jpg");
-//            noLoop();
+            noLoop();
         }
     }
 
@@ -66,11 +67,11 @@ public class ImageProcessing extends PApplet {
 
     public void computeImage(PImage img) {
 
-        buffer = createImage(img.width, img.height, RGB);
+        buffer1 = createImage(img.width, img.height, RGB);
+        buffer2 = createImage(img.width, img.height, RGB);
 
-//        image(img,0, 0);
         List<Integer> sourcePixels = DepressingJava.toIntList(img.pixels);
-//        Convolution.gaussianBlur(img.width, img.height)
+        ImageTransformation<Float, Float> blur = Convolution.gaussianBlur(img.width, img.height);
 ////                .andThen(new PixelTransformer<>((Float b) -> {
 ////                    System.out.println(this.hue(Math.round(b)));
 ////                    return Math.round(b);
@@ -90,14 +91,34 @@ public class ImageProcessing extends PApplet {
 //                .andThen(DrawEffects.drawLineArray(this, 0, img.width))
 //                .apply(sourcePixels);
 
-        ImageTransformation<Float, Float> blur = Convolution.gaussianBlur(img.width, img.height);
-        new PixelTransformer<>(this::brightness)
-//                .andThen(Threshold.genericBinary( p -> lowerThreshold.getPos() * 255 < p && p < upperThreshold.getPos() * 255, 250f, 0))
-//                .andThen(new PixelTransformer<Float, Integer>(p -> (int) this.brightness(this.color(p))))
-//                .andThen(blur)
-//                .andThen(new PixelTransformer<>(p -> this.brightness((int) p)))
-                .andThen(new PixelTransformer<>(this::color))
-                .andThen(DrawEffects.drawPixels(this, buffer, 0, 0))
+
+
+        //hue ranges: 116 - 136
+        //brightness ranges: 28 - 120
+
+        Function<List<Integer>, List<Float>> filtered = new PixelTransformer<>(p -> {
+            float b = this.brightness(p);
+            float h = this.hue(p);
+            return 116 < h && h < 136 && 28 < b && b < 155 ? 255f : 0f;
+        });
+        filtered.andThen(blur)
+                                .andThen(Convolution.sobelDoubleConvolution(img.width, img.height))
+
+//        ImageTransformation<Float, Float> blur = Convolution.gaussianBlur(img.width, img.height);
+//        hue
+//                .andThen(Threshold.genericBinary(i -> i < 128, 255, 0))
+////                .andThen(brightness)
+////                .andThen(new PixelTransformer<Float, Integer>(p -> (int) this.brightness(this.color(p))))
+////                .andThen(blur)
+////                .andThen(new PixelTransformer<>(p -> this.brightness((int) p))
+                .andThen(Convolution.sobelDoubleConvolution(img.width, img.height))
+//                .andThen(new PixelTransformer<>(this::color))
+                .andThen(DrawEffects.drawPixels(this, buffer1, 0, 0))
+                .andThen(new HoughTransformation(0.06f, 2.5f, img.width, img.height))
+                .andThen(DrawEffects.drawLines(this, 0, img.width))
+                .andThen(HoughClusters.mapToClusters(200, 10))
+                .andThen(HoughClusters.selectBestLines(10))
+//                .andThen(DrawEffects.drawLineArray(this, 0, img.width))
                 .apply(sourcePixels);
 
     }
