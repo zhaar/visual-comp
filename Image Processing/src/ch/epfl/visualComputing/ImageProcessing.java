@@ -119,7 +119,7 @@ public class ImageProcessing extends PApplet {
 //                .andThen(new PixelTransformer<>(f -> this.brightness(Math.round(f))))
                 .andThen(new HoughTransformation(0.06f, 2.5f, img.width, img.height))
                 .andThen(DrawEffects.drawHough(this, img.width, 0))
-//                .andThen(DrawEffects.drawLines(this, 0, img.width, 200))
+                .andThen(DrawEffects.drawLines(this, 0, img.width, 200))
 //                .andThen(HoughClusters.mapToClusters(200, 10))
 //                .andThen(new EffectFunction<>(p -> {
 //                    DrawEffects.drawLines(this, 0, img.width, 200).apply(p._1());
