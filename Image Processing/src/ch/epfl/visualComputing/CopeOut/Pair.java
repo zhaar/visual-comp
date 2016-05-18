@@ -12,4 +12,8 @@ public class Pair<A, B> {
 
     public A _1() { return a; }
     public B _2() { return b; }
+    @Override
+    public String toString() {
+        return "(" + a.toString() + ", " + b.toString() + ")";
+    }
 }

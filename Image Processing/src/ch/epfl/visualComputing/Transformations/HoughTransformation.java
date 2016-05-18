@@ -4,16 +4,20 @@ import ch.epfl.visualComputing.CopeOut.DepressingJava;
 import ch.epfl.visualComputing.CopeOut.Pair;
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PImage;
+import processing.core.PVector;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.stream.IntStream.range;
 
-public class HoughTransformation implements Function<List<Float>, HoughTransformation.HoughData> {
+public class HoughTransformation implements Function<List<Float>, HoughTransformation.HoughAccumulator> {
 
     private final Float phiStep, rStep;
     private final Integer width, height;
@@ -22,56 +26,55 @@ public class HoughTransformation implements Function<List<Float>, HoughTransform
     private final float[] sinTable;
     private final float[] cosTable;
 
+    private static class HoughComparator implements java.util.Comparator<Integer> {
+        int[] accumulator;
+
+        public HoughComparator(int[] accumulator) {
+            this.accumulator = accumulator;
+        }
+
+        @Override
+        public int compare(Integer l1, Integer l2) {
+            if (accumulator[l1] > accumulator[l2] || (accumulator[l1] == accumulator[l2] && l1 < l2))
+                return -1;
+            return 1;
+        }
+    }
+
     public HoughTransformation(float phiStep, float rStep, int width, int height) {
         this.phiStep = phiStep;
         this.rStep = rStep;
         this.width = width;
         this.height = height;
-        this.phiDim = (int) (Math.PI / phiStep) + 2;
-        this.rDim = (int) (((width + height) * 2) + 1 / rStep) + 2;
+        this.phiDim = (int) (Math.PI / phiStep);
+        this.rDim = (int) (((width + height) * 2 + 1) / rStep);
         sinTable = new float[phiDim];
         cosTable = new float[phiDim];
-        for (int angle = 0; angle < phiDim; ++angle) {
-            sinTable[angle] = (float) Math.sin(PConstants.PI * angle / phiDim);
-            cosTable[angle] = (float) Math.cos(PConstants.PI * angle / phiDim);
+        float a = 0;
+        for (int accPhi = 0; accPhi < phiDim; accPhi++) {
+            sinTable[accPhi] = (PApplet.sin(a) /rStep);
+            cosTable[accPhi] = (PApplet.cos(a) / rStep);
+            a += phiStep;
         }
     }
 
-    private HoughData transform(List<Float> source) {
+    private HoughAccumulator transform(List<Float> source) {
 
-        List<Integer> accumulator = new ArrayList<>(Collections.nCopies(rDim * phiDim, 0));
-
-        IntStream.range(0, height).forEach(x ->
+        HoughAccumulator acc = new HoughAccumulator(rDim, phiDim, rStep, phiStep);
+        IntStream.range(0, width).forEach(x ->
                 IntStream.range(0, height).filter(y -> source.get(y * width + x) != 0).forEach(y ->
                 IntStream.range(0, phiDim).forEach(angle -> {
                     int radius = (int) (x * cosTable[angle] + y * sinTable[angle]);
-                    int normalized = radius + rDim / 2;
-                    int idx = angle * rDim + normalized;
-                    accumulator.set(idx, accumulator.get(idx) + 1);
+                    int rNormalized = radius + (rDim - 1) / 2;
+                    acc.accumulate(rNormalized, angle, 1);
                 })));
-        return new HoughData(accumulator, rDim, phiDim, rStep, phiStep);
+
+        return acc;
     }
 
     @Override
-    public HoughData apply(List<Float> source) {
+    public HoughAccumulator apply(List<Float> source) {
         return this.transform(source);
-    }
-
-    public static class HoughData {
-
-        public final int phiDim;
-        public final int rDim;
-        public final List<Integer> acc;
-        public final float phiStep;
-        public final float rStep;
-
-        public HoughData(List<Integer> ls, int rDim, int phiDim, float rStep, float phiStep) {
-            this.acc = ls;
-            this.rDim = rDim;
-            this.phiDim = phiDim;
-            this.phiStep = phiStep;
-            this.rStep = rStep;
-        }
     }
 
     //Accumulator of size radius x angle
@@ -82,8 +85,8 @@ public class HoughTransformation implements Function<List<Float>, HoughTransform
         public final float phiStep;
         public final float rStep;
 
-        public HoughAccumulator(int radius, int angle, float phiStep, float rStep) {
-            this.dataArray = new ArrayList<>(Collections.nCopies(radius * angle, 0));
+        public HoughAccumulator(int radius, int angle, float rStep, float phiStep) {
+            this.dataArray = new ArrayList<>(Collections.nCopies((radius + 2) * (angle + 2), 0));
             this.radius = radius;
             this.angle = angle;
             this.phiStep = phiStep;
@@ -108,8 +111,16 @@ public class HoughTransformation implements Function<List<Float>, HoughTransform
         }
 
         public void accumulate(int r, int phi, int delta) {
-            int index = phi * radius + r;
-            dataArray.set(index, dataArray.get(index) + delta);
+            int idx = (phi + 1) * (radius + 2) + r + 1;
+            dataArray.set(idx, dataArray.get(idx) + delta);
+        }
+
+        public Pair<Float, Float> convertToActualValues(int idx) {
+            int accPhi = (int) (idx / (radius + 2)) - 1;
+            int accR = idx % (radius + 2);
+            float r = (accR - (radius - 1) * 0.5f) * rStep;
+            float phi = accPhi * phiStep;
+            return new Pair<>(r, phi);
         }
     }
 }

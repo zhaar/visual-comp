@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class HoughClusters {
 
@@ -26,14 +27,16 @@ public class HoughClusters {
         return true;
     }
 
+    //Sane signature: Acc -> (Acc, [(Int, Int)]) the list of pair returned contains the index and the amount of votes associated
     public static Function<HoughAccumulator, Pair<HoughAccumulator,List<Pair<Integer, Integer>>>> mapToClusters(int minVotes, int neighborhood) {
         return (hough) -> {
+            //Sane: [(Int, Int)] -> (Int, Int) -> [(Int, Int)]
             BiFunction<List<Pair<Integer, Integer>>, Pair<Integer, Integer>, List<Pair<Integer, Integer>>> accumulator = (acc, pair) -> {
                 int votes = pair._1();
                 int index = pair._2();
                 Pair<Integer, Integer> coord = hough.convertIndex(index);
                 if (votes > minVotes && isLocalMaxima(hough, coord._1(), coord._2(), neighborhood)) {
-                    acc.add(coord);
+                    acc.add(new Pair<>(index, votes));
                 }
                 return acc;
             };
@@ -45,12 +48,20 @@ public class HoughClusters {
         };
     }
 
-    public static Function<Pair<HoughAccumulator, List<Pair<Integer, Integer>>>, List<Pair<Integer, Integer>>> selectBestLines(int n) {
+    //Sane: (Acc, [(Int, Int)]) -> [(Float, Float)]
+    //takes a list of (Index, votes) and return a list of (radius, angle)
+    public static Function<Pair<HoughAccumulator, List<Pair<Integer, Integer>>>, List<Pair<Float, Float>>> selectBestLines(int n) {
         return (pair) -> {
             HoughAccumulator acc = pair._1();
             List<Pair<Integer, Integer>> lines = pair._2();
-            lines.sort((lhs, rhs) -> acc.get(lhs._1(), lhs._2()) > acc.get(rhs._1(), rhs._2()) ? 1 : -1);
-            return MyList.take(lines, n);
+            lines.sort((Pair<Integer, Integer> lhs,Pair<Integer, Integer>  rhs) -> lhs._2() < rhs._2() ? 1 : -1);
+            return MyList.take(lines, n).stream().map(p -> acc.convertToActualValues(p._1())).collect(Collectors.toList());
         };
+    }
+
+    public static Pair<Float, Float> accToValues(Pair<Integer, Integer> coord, int radius, int angle, float rStep, float phiStep) {
+        float r = (coord._1() - (radius - 1) * 0.5f) * rStep;
+        float phi = coord._2() * phiStep;
+        return new Pair<>(r, phi);
     }
 }

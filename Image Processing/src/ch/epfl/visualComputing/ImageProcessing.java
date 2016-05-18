@@ -26,7 +26,7 @@ public class ImageProcessing extends PApplet {
     HScrollbar lowerThreshold = new HScrollbar(this, 0, 15, 800, 12);
 
     public void settings() {
-        size(2400, 800);
+        size(800, 600);
     }
 
     public void setup() {
@@ -74,28 +74,6 @@ public class ImageProcessing extends PApplet {
         List<Integer> sourcePixels = DepressingJava.toIntList(img.pixels);
         ImageTransformation<Float, Float> blur = Convolution.gaussianBlur(img.width, img.height);
 
-
-////                .andThen(new PixelTransformer<>((Float b) -> {
-////                    System.out.println(this.hue(Math.round(b)));
-////                    return Math.round(b);
-////                }))
-////                .andThen(new PixelTransformer<>(this::hue))
-//                .andThen(new PixelTransformer<>(Math::round))
-//                .andThen(DrawEffects.drawPixels(this, createImage(img.width, img.height, RGB), 0, 0))
-//                .andThen(new PixelTransformer<>(p -> Float.compare(p, 128) < 0 ? 250f : 0f))
-//                .andThen(Convolution.sobelDoubleConvolution(img.width, img.height))
-//                .andThen(new PixelTransformer<>(Math::round))
-//                .andThen(DrawEffects.drawPixels(this, createImage(img.width, img.height, RGB), 0, 0))
-//                .andThen(new PixelTransformer<>(p -> new Float(p)))
-//                .andThen(new HoughTransformation(0.06f, 2.5f, img.width, img.height))
-//                .andThen(DrawEffects.drawHough(this))
-//                .andThen(HoughClusters.mapToClusters(200, 10))
-//                .andThen(HoughClusters.selectBestLines(10))
-//                .andThen(DrawEffects.drawLineArray(this, 0, img.width))
-//                .apply(sourcePixels);
-
-
-
         //hue ranges: 112 - 133
         //brightness ranges: 28 - 120
 
@@ -116,16 +94,11 @@ public class ImageProcessing extends PApplet {
         filtered.andThen(blur)
                 .andThen(Convolution.sobelDoubleConvolution(img.width, img.height))
                 .andThen(DrawEffects.drawPixels(this, buffer1, 0, 0))
-//                .andThen(new PixelTransformer<>(f -> this.brightness(Math.round(f))))
                 .andThen(new HoughTransformation(0.06f, 2.5f, img.width, img.height))
-                .andThen(DrawEffects.drawHough(this, img.width, 0))
-                .andThen(DrawEffects.drawLines(this, 0, img.width, 200))
-//                .andThen(HoughClusters.mapToClusters(200, 10))
-//                .andThen(new EffectFunction<>(p -> {
-//                    DrawEffects.drawLines(this, 0, img.width, 200).apply(p._1());
-//                }))
-//                .andThen(HoughClusters.selectBestLines(15))
-//                .andThen(DrawEffects.drawLineArray(this, 0, img.width))
+                .andThen(DrawEffects.drawHough(this, 0, 0))
+                .andThen(HoughClusters.mapToClusters(200, 10))
+                .andThen(HoughClusters.selectBestLines(10))
+                .andThen(DrawEffects.drawLineArray(this, 0, img.width))
                 .apply(sourcePixels);
 
     }
