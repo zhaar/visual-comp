@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.IntStream;
+
+import static java.util.stream.IntStream.range;
 
 public class HoughTransformation implements Function<List<Float>, HoughTransformation.HoughAccumulator> {
 
@@ -39,13 +40,11 @@ public class HoughTransformation implements Function<List<Float>, HoughTransform
     private HoughAccumulator transform(List<Float> source) {
 
         HoughAccumulator acc = new HoughAccumulator(rDim, phiDim, rStep, phiStep);
-        IntStream.range(0, width).forEach(x ->
-                IntStream.range(0, height).filter(y -> source.get(y * width + x) != 0).forEach(y ->
-                        IntStream.range(0, phiDim).forEach(angle -> {
-                            int radius = (int) (x * cosTable[angle] + y * sinTable[angle]);
-                            int rNormalized = radius + (rDim - 1) / 2;
-                            acc.accumulate(rNormalized, angle, 1);
-                        })));
+        range(0, width).forEach(x -> range(0, height).filter(y -> source.get(y * width + x) != 0).forEach(y -> range(0, phiDim).forEach(angle -> {
+            int radius = (int) (x * cosTable[angle] + y * sinTable[angle]);
+            int rNormalized = radius + (rDim - 1) / 2;
+            acc.accumulate(rNormalized, angle, 1);
+        })));
 
         return acc;
     }
@@ -55,13 +54,30 @@ public class HoughTransformation implements Function<List<Float>, HoughTransform
         return this.transform(source);
     }
 
+
+    public interface HoughAccInterface {
+
+        int getRadius();
+        int getAngle();
+        List<Integer> getDataArray();
+        Pair<Integer, Integer> convertIndex(int i);
+        int get(int r, int phi);
+        int getDefault(int r, int phi, int def);
+        void set(int r, int phi, int value);
+        void accumulate(int r, int phi, int delta);
+        Pair<Float, Float> convertToActualValues(int idx);
+    }
     //Accumulator of size radius x angle
-    public static class HoughAccumulator {
+    public static class HoughAccumulator implements HoughAccInterface {
         public final List<Integer> dataArray;
         public final int radius;
         public final int angle;
         public final float phiStep;
         public final float rStep;
+
+        public int getRadius() { return radius; }
+        public int getAngle() { return  angle; }
+        public List<Integer> getDataArray() { return dataArray; }
 
         public HoughAccumulator(int radius, int angle, float rStep, float phiStep) {
             this.dataArray = new ArrayList<>(Collections.nCopies((radius + 2) * (angle + 2), 0));
@@ -94,7 +110,7 @@ public class HoughTransformation implements Function<List<Float>, HoughTransform
         }
 
         public Pair<Float, Float> convertToActualValues(int idx) {
-            int accPhi = (int) (idx / (radius + 2)) - 1;
+            int accPhi = (idx / (radius + 2)) - 1;
             int accR = idx % (radius + 2);
             float r = (accR - (radius - 1) * 0.5f) * rStep;
             float phi = accPhi * phiStep;

@@ -24,7 +24,6 @@ public class Convolution {
         this.kernel = kernel;
         this.size = mSize;
         this.weight = w;
-        System.out.println("weight: " + w);
     }
 
     public Convolution(int[][] kernel, int mSize, int weight) {

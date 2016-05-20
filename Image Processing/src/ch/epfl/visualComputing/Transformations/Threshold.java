@@ -1,10 +1,26 @@
 package ch.epfl.visualComputing.Transformations;
 
+import processing.core.PApplet;
+
+import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public final class Threshold {
 
     private Threshold() {
+    }
+
+    public static Function<List<Integer>, List<Float>> customFilter(PApplet ctx) {
+        return new PixelTransformer<>((Function<Integer, Float>) p -> {
+            float b = ctx.brightness(p);
+            float h = ctx.hue(p);
+            float s = ctx.saturation(p);
+            return s > 86
+                    && 70 < h && h < 144
+                    && 0 < b && b < 153
+                    ? 255f : 0f;
+        });
     }
 
     //If the predicate is satisfied the maximum value is returned, otherwise, the minimum value is returned

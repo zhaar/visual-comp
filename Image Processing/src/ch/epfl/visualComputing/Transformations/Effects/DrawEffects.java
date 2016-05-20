@@ -1,6 +1,5 @@
 package ch.epfl.visualComputing.Transformations.Effects;
 
-import ch.epfl.visualComputing.Quad;
 import ch.epfl.visualComputing.Transformations.CopeOut.MyList;
 import ch.epfl.visualComputing.Transformations.CopeOut.Pair;
 import ch.epfl.visualComputing.Transformations.HoughTransformation;
@@ -15,7 +14,6 @@ import java.util.Random;
 public class DrawEffects {
 
     private DrawEffects() {}
-
 
     public static PImage applyImage(List<Float> pixels, PImage buffer, PApplet ctx) {
         for (int i = 0; i < buffer.pixels.length; i++) {
@@ -40,11 +38,11 @@ public class DrawEffects {
         });
     }
 
-    public static EffectFunction<HoughTransformation.HoughAccumulator> drawHough(PApplet ctx, int x, int y, int width, int height) {
+    public static EffectFunction<HoughTransformation.HoughAccInterface> drawHough(PApplet ctx, int x, int y, int width, int height) {
         return new EffectFunction<>(hough -> {
-            PImage houghImg = ctx.createImage(hough.radius + 2, hough.angle + 2, PConstants.ALPHA);
-            for (int i = 0; i < hough.dataArray.size(); i++) {
-                houghImg.pixels[i] = ctx.color(PApplet.min(255, hough.dataArray.get(i)));
+            PImage houghImg = ctx.createImage(hough.getRadius() + 2, hough.getAngle() + 2, PConstants.ALPHA);
+            for (int i = 0; i < hough.getDataArray().size(); i++) {
+                houghImg.pixels[i] = ctx.color(PApplet.min(255, hough.getDataArray().get(i)));
             }
             houghImg.resize(width, height);
             houghImg.updatePixels();

@@ -1,7 +1,6 @@
 package ch.epfl.visualComputing.Transformations;
 
-import ch.epfl.visualComputing.Quad;
-import ch.epfl.visualComputing.Transformations.Effects.EffectFunction;
+import ch.epfl.visualComputing.QuadGraph;
 import processing.core.PApplet;
 import processing.core.PVector;
 
@@ -37,20 +36,16 @@ public class QuadTransform implements Function<List<PVector>, List<List<PVector>
     @Override
     public List<List<PVector>> apply(List<PVector> lines) {
         int maxArea = width * height;
-        int minArea = maxArea / 6;
-        Quad.QuadGraph quads = new Quad.QuadGraph(lines, width, height);
+        int minArea = 4800;
+        QuadGraph quads = new QuadGraph(lines, width, height);
         List<int[]> cycles = quads.findCycles();
 
-        List<List<PVector>> filtered = cycles.stream()
+        return cycles.stream()
                 .map(a -> linesToIntersections(a, lines))
                 .map(quads::sortCorners)
                 .filter(corners -> quads.isConvex(corners.get(0), corners.get(1), corners.get(2), corners.get(3)))
                 .filter(corners -> quads.validArea(corners.get(0), corners.get(1), corners.get(2), corners.get(3), maxArea, minArea))
-                .map(new EffectFunction<>(System.out::println))
                 .filter(corners -> quads.nonFlatQuad(corners.get(0), corners.get(1), corners.get(2), corners.get(3)))
                 .collect(Collectors.toList());
-        System.out.println("quad lefts");
-        filtered.forEach(System.out::println);
-        return filtered;
     }
 }
