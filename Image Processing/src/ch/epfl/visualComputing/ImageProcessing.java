@@ -1,32 +1,29 @@
 package ch.epfl.visualComputing;
 
-import ch.epfl.visualComputing.CopeOut.DepressingJava;
 import ch.epfl.visualComputing.Transformations.*;
+import ch.epfl.visualComputing.Transformations.CopeOut.DepressingJava;
 import ch.epfl.visualComputing.Transformations.Effects.DrawEffects;
-import ch.epfl.visualComputing.Transformations.Effects.EffectFunction;
 import processing.core.PApplet;
 import processing.core.PImage;
+import processing.core.PVector;
 import processing.video.Capture;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 public class ImageProcessing extends PApplet {
 
-    PImage img;
+    PImage img1;
     Capture cam;
     PImage buffer1;
-    PImage buffer2;
 
 
     private static final boolean webcam = false;
 
-    HScrollbar upperThreshold = new HScrollbar(this, 0, 0, 800, 12);
-    HScrollbar lowerThreshold = new HScrollbar(this, 0, 15, 800, 12);
-
     public void settings() {
-        size(800, 600);
+        size(800 * 3, 600);
     }
 
     public void setup() {
@@ -44,7 +41,10 @@ public class ImageProcessing extends PApplet {
                 cam.start();
             }
         } else {
-            img = loadImage("board1.jpg");
+            img1 = loadImage("board1.jpg");
+
+            buffer1 = createImage(img1.width, img1.height, RGB);
+
             noLoop();
         }
     }
@@ -54,53 +54,46 @@ public class ImageProcessing extends PApplet {
             if (cam.available()) {
                 cam.read();
             }
-            img = cam.get();
-            image(img, 0, 0);
+            img1 = cam.get();
+            image(img1, 0, 0);
         } else {
-            computeImage(img);
-            upperThreshold.update();
-            upperThreshold.display();
-            lowerThreshold.update();
-            lowerThreshold.display();
+            image(img1, 0, 0);
+            computeAndDraw(img1, buffer1, this);
         }
     }
 
 
-    public void computeImage(PImage img) {
 
-        buffer1 = createImage(img.width, img.height, RGB);
-        buffer2 = createImage(img.width, img.height, RGB);
+    public static void computeAndDraw(PImage img, PImage buffer, PApplet ctx) {
 
         List<Integer> sourcePixels = DepressingJava.toIntList(img.pixels);
         ImageTransformation<Float, Float> blur = Convolution.gaussianBlur(img.width, img.height);
 
-        //hue ranges: 112 - 133
-        //brightness ranges: 28 - 120
+        //hue ranges: 112 - 133 or 70 - 144
+        //brightness ranges: 0 - 153
 
-        float min =lowerThreshold.getPos() * 255;
-        float max = upperThreshold.getPos() * 255;
-//        System.out.println("max: " + max);
-//        System.out.println("min: " + min);
-
-        Function<List<Integer>, List<Float>> filtered = new PixelTransformer<>(p -> {
-            float b = this.brightness(p);
-            float h = this.hue(p);
-            float s = this.saturation(p);
+        Function<List<Integer>, List<Float>> filtered = new PixelTransformer<>((Function<Integer, Float>) p -> {
+            float b = ctx.brightness(p);
+            float h = ctx.hue(p);
+            float s = ctx.saturation(p);
             return s > 86
-                    && 112 < h && h < 133
-                    && 28 < b && b < 130
+                    && 70 < h && h < 144
+                    && 0 < b && b < 153
                     ? 255f : 0f;
         });
+
+        ctx.image(img, 0, 0);
         filtered.andThen(blur)
                 .andThen(Convolution.sobelDoubleConvolution(img.width, img.height))
-                .andThen(DrawEffects.drawPixels(this, buffer1, 0, 0))
+                .andThen(DrawEffects.drawPixels(ctx, buffer, 1600, 0))
                 .andThen(new HoughTransformation(0.06f, 2.5f, img.width, img.height))
-                .andThen(DrawEffects.drawHough(this, 0, 0))
+                .andThen(DrawEffects.drawHough(ctx, 800, 0, 800, 600))
                 .andThen(HoughClusters.mapToClusters(200, 10))
-                .andThen(HoughClusters.selectBestLines(10))
-                .andThen(DrawEffects.drawLineArray(this, 0, img.width))
+                .andThen(HoughClusters.selectBestLines(6))
+                .andThen(DrawEffects.drawLineArray(ctx, 0, img.width))
+                .andThen(ls -> ls.stream().map(p -> new PVector(p._1(), p._2())).collect(Collectors.toList()))
+                .andThen(new QuadTransform(img.width, img.height))
+                .andThen(DrawEffects.drawQuads(ctx))
                 .apply(sourcePixels);
-
     }
-
 }

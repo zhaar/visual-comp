@@ -1,13 +1,10 @@
-package ch.epfl.visualComputing;
-
-import ch.epfl.visualComputing.Transformations.Convolution;
-import ch.epfl.visualComputing.Transformations.TransformationFunction;
+package ch.epfl.visualComputing.Transformations;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class ImageTransformation<Pixel, Transformed> implements TransformationFunction<List<Pixel>, List<Transformed>>{
+public class ImageTransformation<Pixel, Transformed> implements TransformationFunction<List<Pixel>, List<Transformed>> {
 
     @FunctionalInterface
     public interface GenericTransformation<T, S> {

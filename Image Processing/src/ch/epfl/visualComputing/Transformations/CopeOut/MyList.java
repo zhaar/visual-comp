@@ -1,14 +1,14 @@
-package ch.epfl.visualComputing.CopeOut;
+package ch.epfl.visualComputing.Transformations.CopeOut;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class MyList {
 
-    private MyList() {}
+    private MyList() {
+    }
 
     public static <S, T> List<Pair<S, T>> zip(List<S> xs, List<T> ys) {
         int length = Math.min(xs.size(), ys.size());

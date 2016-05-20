@@ -1,4 +1,4 @@
-package ch.epfl.visualComputing.CopeOut;
+package ch.epfl.visualComputing.Transformations.CopeOut;
 
 public class Triple<A, B, C> {
     private final A a;
@@ -11,7 +11,15 @@ public class Triple<A, B, C> {
         this.c = c;
     }
 
-    public A _1() { return a; }
-    public B _2() { return b; }
-    public C _3() { return c; }
+    public A _1() {
+        return a;
+    }
+
+    public B _2() {
+        return b;
+    }
+
+    public C _3() {
+        return c;
+    }
 }

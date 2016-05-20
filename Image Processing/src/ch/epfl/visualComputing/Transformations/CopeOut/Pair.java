@@ -1,4 +1,4 @@
-package ch.epfl.visualComputing.CopeOut;
+package ch.epfl.visualComputing.Transformations.CopeOut;
 
 public class Pair<A, B> {
 
@@ -10,8 +10,14 @@ public class Pair<A, B> {
         this.b = b;
     }
 
-    public A _1() { return a; }
-    public B _2() { return b; }
+    public A _1() {
+        return a;
+    }
+
+    public B _2() {
+        return b;
+    }
+
     @Override
     public String toString() {
         return "(" + a.toString() + ", " + b.toString() + ")";

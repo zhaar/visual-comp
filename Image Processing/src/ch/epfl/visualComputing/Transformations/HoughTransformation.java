@@ -1,21 +1,14 @@
 package ch.epfl.visualComputing.Transformations;
 
-import ch.epfl.visualComputing.CopeOut.DepressingJava;
-import ch.epfl.visualComputing.CopeOut.Pair;
+import ch.epfl.visualComputing.Transformations.CopeOut.DepressingJava;
+import ch.epfl.visualComputing.Transformations.CopeOut.Pair;
 import processing.core.PApplet;
-import processing.core.PConstants;
-import processing.core.PImage;
-import processing.core.PVector;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static java.util.stream.IntStream.range;
 
 public class HoughTransformation implements Function<List<Float>, HoughTransformation.HoughAccumulator> {
 
@@ -52,7 +45,7 @@ public class HoughTransformation implements Function<List<Float>, HoughTransform
         cosTable = new float[phiDim];
         float a = 0;
         for (int accPhi = 0; accPhi < phiDim; accPhi++) {
-            sinTable[accPhi] = (PApplet.sin(a) /rStep);
+            sinTable[accPhi] = (PApplet.sin(a) / rStep);
             cosTable[accPhi] = (PApplet.cos(a) / rStep);
             a += phiStep;
         }
@@ -63,11 +56,11 @@ public class HoughTransformation implements Function<List<Float>, HoughTransform
         HoughAccumulator acc = new HoughAccumulator(rDim, phiDim, rStep, phiStep);
         IntStream.range(0, width).forEach(x ->
                 IntStream.range(0, height).filter(y -> source.get(y * width + x) != 0).forEach(y ->
-                IntStream.range(0, phiDim).forEach(angle -> {
-                    int radius = (int) (x * cosTable[angle] + y * sinTable[angle]);
-                    int rNormalized = radius + (rDim - 1) / 2;
-                    acc.accumulate(rNormalized, angle, 1);
-                })));
+                        IntStream.range(0, phiDim).forEach(angle -> {
+                            int radius = (int) (x * cosTable[angle] + y * sinTable[angle]);
+                            int rNormalized = radius + (rDim - 1) / 2;
+                            acc.accumulate(rNormalized, angle, 1);
+                        })));
 
         return acc;
     }

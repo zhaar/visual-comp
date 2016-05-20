@@ -4,7 +4,8 @@ import java.util.function.Predicate;
 
 public final class Threshold {
 
-    private Threshold() {}
+    private Threshold() {
+    }
 
     //If the predicate is satisfied the maximum value is returned, otherwise, the minimum value is returned
     public static <T, S> PixelTransformer<S, T> genericBinary(Predicate<S> p, T max, T min) {

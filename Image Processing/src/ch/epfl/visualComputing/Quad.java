@@ -12,10 +12,10 @@ public class Quad {
     public static class QuadGraph {
 
 
-        List<int[]> cycles = new ArrayList<int[]>();
-        int[][] graph;
+        private final List<int[]> cycles = new ArrayList<>();
+        public final int[][] graph;
 
-        void build(List<PVector> lines, int width, int height) {
+        public QuadGraph(List<PVector> lines, int width, int height) {
 
             int n = lines.size();
 
@@ -28,9 +28,9 @@ public class Quad {
                 for (int j = i + 1; j < lines.size(); j++) {
                     if (intersect(lines.get(i), lines.get(j), width, height)) {
 
-                        // TODO
-                        // fill the graph using intersect() to check if two lines are
-                        // connected in the graph.
+                        System.out.println("line: " + lines.get(i) + " intersects with " + lines.get(j));
+                        graph[idx][0] = i;
+                        graph[idx][1] = j;
 
                         idx++;
                     }
@@ -41,7 +41,7 @@ public class Quad {
         /** Returns true if polar lines 1 and 2 intersect
          * inside an area of size (width, height)
          */
-        boolean intersect(PVector line1, PVector line2, int width, int height) {
+        public boolean intersect(PVector line1, PVector line2, int width, int height) {
 
             double sin_t1 = Math.sin(line1.y);
             double sin_t2 = Math.sin(line2.y);
@@ -55,18 +55,15 @@ public class Quad {
             int x = (int) ((r2 * sin_t1 - r1 * sin_t2) / denom);
             int y = (int) ((-r2 * cos_t1 + r1 * cos_t2) / denom);
 
-            if (0 <= x && 0 <= y && width >= x && height >= y)
-                return true;
-            else
-                return false;
+            return 0 <= x && 0 <= y && width >= x && height >= y;
         }
 
-        List<int[]> findCycles() {
+        public List<int[]> findCycles() {
 
             cycles.clear();
-            for (int i = 0; i < graph.length; i++) {
-                for (int j = 0; j < graph[i].length; j++) {
-                    findNewCycles(new int[] {graph[i][j]});
+            for (int[] aGraph : graph) {
+                for (int anAGraph : aGraph) {
+                    findNewCycles(new int[]{anAGraph});
                 }
             }
             for (int[] cy : cycles) {
@@ -85,41 +82,32 @@ public class Quad {
             int x;
             int[] sub = new int[path.length + 1];
 
-            for (int i = 0; i < graph.length; i++)
+            for (int[] aGraph : graph) {
                 for (int y = 0; y <= 1; y++)
-                    if (graph[i][y] == n)
-                    //  edge refers to our current node
-                    {
-                        x = graph[i][(y + 1) % 2];
-                        if (!visited(x, path))
-                        //  neighbor node not on path yet
-                        {
+                    if (aGraph[y] == n) {
+                        x = aGraph[(y + 1) % 2];
+                        if (!visited(x, path)) {
                             sub[0] = x;
                             System.arraycopy(path, 0, sub, 1, path.length);
                             //  explore extended path
                             findNewCycles(sub);
-                        } else if ((path.length == 4) && (x == path[path.length - 1]))
-                        //  cycle found
-                        {
+                        } else if ((path.length == 4) && (x == path[path.length - 1])) {
                             int[] p = normalize(path);
                             int[] inv = invert(p);
-                            if (isNew(p) && isNew(inv))
-                            {
+                            if (isNew(p) && isNew(inv)) {
                                 cycles.add(p);
                             }
                         }
                     }
+            }
         }
 
         //  check of both arrays have same lengths and contents
-        Boolean equals(int[] a, int[] b)
-        {
+        Boolean equals(int[] a, int[] b) {
             Boolean ret = (a[0] == b[0]) && (a.length == b.length);
 
-            for (int i = 1; ret && (i < a.length); i++)
-            {
-                if (a[i] != b[i])
-                {
+            for (int i = 1; ret && (i < a.length); i++) {
+                if (a[i] != b[i]) {
                     ret = false;
                 }
             }
@@ -128,12 +116,10 @@ public class Quad {
         }
 
         //  create a path array with reversed order
-        int[] invert(int[] path)
-        {
+        int[] invert(int[] path) {
             int[] p = new int[path.length];
 
-            for (int i = 0; i < path.length; i++)
-            {
+            for (int i = 0; i < path.length; i++) {
                 p[i] = path[path.length - 1 - i];
             }
 
@@ -141,16 +127,14 @@ public class Quad {
         }
 
         //  rotate cycle path such that it begins with the smallest node
-        int[] normalize(int[] path)
-        {
+        int[] normalize(int[] path) {
             int[] p = new int[path.length];
             int x = smallest(path);
             int n;
 
             System.arraycopy(path, 0, p, 0, path.length);
 
-            while (p[0] != x)
-            {
+            while (p[0] != x) {
                 n = p[0];
                 System.arraycopy(p, 1, p, 0, p.length - 1);
                 p[p.length - 1] = n;
@@ -161,31 +145,21 @@ public class Quad {
 
         //  compare path against known cycles
         //  return true, iff path is not a known cycle
-        Boolean isNew(int[] path)
-        {
-            Boolean ret = true;
-
-            for (int[] p : cycles)
-            {
-                if (equals(p, path))
-                {
-                    ret = false;
-                    break;
+        Boolean isNew(int[] path) {
+            for (int[] p : cycles) {
+                if (equals(p, path)) {
+                    return false;
                 }
             }
-
-            return ret;
+            return true;
         }
 
         //  return the int of the array which is the smallest
-        int smallest(int[] path)
-        {
+        int smallest(int[] path) {
             int min = path[0];
 
-            for (int p : path)
-            {
-                if (p < min)
-                {
+            for (int p : path)  {
+                if (p < min) {
                     min = p;
                 }
             }
@@ -194,23 +168,15 @@ public class Quad {
         }
 
         //  check if vertex n is contained in path
-        Boolean visited(int n, int[] path)
-        {
-            Boolean ret = false;
-
-            for (int p : path)
-            {
-                if (p == n)
-                {
-                    ret = true;
-                    break;
+        Boolean visited(int n, int[] path) {
+            for (int p : path) {
+                if (p == n) {
+                    return true;
                 }
             }
 
-            return ret;
+            return false;
         }
-
-
 
         /** Check if a quad is convex or not.
          *
@@ -223,7 +189,7 @@ public class Quad {
          *
          * @param c1
          */
-        boolean isConvex(PVector c1, PVector c2, PVector c3, PVector c4) {
+        public boolean isConvex(PVector c1, PVector c2, PVector c3, PVector c4) {
 
             PVector v21= PVector.sub(c1, c2);
             PVector v32= PVector.sub(c2, c3);
@@ -235,8 +201,7 @@ public class Quad {
             float i3=v43.cross(v14).z;
             float i4=v14.cross(v21).z;
 
-            if (   (i1>0 && i2>0 && i3>0 && i4>0)
-                    || (i1<0 && i2<0 && i3<0 && i4<0))
+            if ((i1>0 && i2>0 && i3>0 && i4>0) || (i1<0 && i2<0 && i3<0 && i4<0))
                 return true;
             else
                 System.out.println("Eliminating non-convex quad");
@@ -245,7 +210,7 @@ public class Quad {
 
         /** Compute the area of a quad, and check it lays within a specific range
          */
-        boolean validArea(PVector c1, PVector c2, PVector c3, PVector c4, float max_area, float min_area) {
+        public boolean validArea(PVector c1, PVector c2, PVector c3, PVector c4, float max_area, float min_area) {
 
             PVector v21= PVector.sub(c1, c2);
             PVector v32= PVector.sub(c2, c3);
@@ -271,7 +236,7 @@ public class Quad {
         /** Compute the (cosine) of the four angles of the quad, and check they are all large enough
          * (the quad representing our board should be close to a rectangle)
          */
-        boolean nonFlatQuad(PVector c1, PVector c2, PVector c3, PVector c4) {
+        public boolean nonFlatQuad(PVector c1, PVector c2, PVector c3, PVector c4) {
 
             // cos(70deg) ~= 0.3
             float min_cos = 0.5f;
@@ -295,7 +260,7 @@ public class Quad {
         }
 
 
-        List<PVector> sortCorners(List<PVector> quad) {
+        public List<PVector> sortCorners(List<PVector> quad) {
 
             // 1 - Sort corners so that they are ordered clockwise
             PVector a = quad.get(0);
@@ -304,8 +269,6 @@ public class Quad {
             PVector center = new PVector((a.x+b.x)/2, (a.y+b.y)/2);
 
             Collections.sort(quad, new CWComparator(center));
-
-
 
             // 2 - Sort by upper left most corner
             PVector origin = new PVector(0, 0);

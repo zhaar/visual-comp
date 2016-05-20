@@ -1,4 +1,4 @@
-package ch.epfl.visualComputing.CopeOut;
+package ch.epfl.visualComputing.Transformations.CopeOut;
 
 import java.util.ArrayList;
 import java.util.List;

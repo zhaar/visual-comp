@@ -1,12 +1,10 @@
 package ch.epfl.visualComputing.Transformations;
 
-import ch.epfl.visualComputing.CopeOut.MyList;
-import ch.epfl.visualComputing.CopeOut.Pair;
-import ch.epfl.visualComputing.ImageTransformation;
+import ch.epfl.visualComputing.Transformations.CopeOut.MyList;
+import ch.epfl.visualComputing.Transformations.CopeOut.Pair;
 import ch.epfl.visualComputing.Transformations.HoughTransformation.HoughAccumulator;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -28,7 +26,7 @@ public class HoughClusters {
     }
 
     //Sane signature: Acc -> (Acc, [(Int, Int)]) the list of pair returned contains the index and the amount of votes associated
-    public static Function<HoughAccumulator, Pair<HoughAccumulator,List<Pair<Integer, Integer>>>> mapToClusters(int minVotes, int neighborhood) {
+    public static Function<HoughAccumulator, Pair<HoughAccumulator, List<Pair<Integer, Integer>>>> mapToClusters(int minVotes, int neighborhood) {
         return (hough) -> {
             //Sane: [(Int, Int)] -> (Int, Int) -> [(Int, Int)]
             BiFunction<List<Pair<Integer, Integer>>, Pair<Integer, Integer>, List<Pair<Integer, Integer>>> accumulator = (acc, pair) -> {
@@ -41,7 +39,7 @@ public class HoughClusters {
                 return acc;
             };
             List<Pair<Integer, Integer>> result = new ArrayList<>();
-            for (Pair<Integer, Integer> element : MyList.zipWithIndex(hough.dataArray)){
+            for (Pair<Integer, Integer> element : MyList.zipWithIndex(hough.dataArray)) {
                 result = accumulator.apply(result, element);
             }
             return new Pair<>(hough, result);
@@ -54,8 +52,10 @@ public class HoughClusters {
         return (pair) -> {
             HoughAccumulator acc = pair._1();
             List<Pair<Integer, Integer>> lines = pair._2();
-            lines.sort((Pair<Integer, Integer> lhs,Pair<Integer, Integer>  rhs) -> lhs._2() < rhs._2() ? 1 : -1);
-            return MyList.take(lines, n).stream().map(p -> acc.convertToActualValues(p._1())).collect(Collectors.toList());
+            lines.sort((Pair<Integer, Integer> lhs, Pair<Integer, Integer> rhs) -> lhs._2() < rhs._2() ? 1 : -1);
+            List<Pair<Float, Float>> selected = MyList.take(lines, n).stream().map(p -> acc.convertToActualValues(p._1())).collect(Collectors.toList());
+            selected.forEach(System.out::println);
+            return selected;
         };
     }
 
