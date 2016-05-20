@@ -15,51 +15,25 @@ import java.util.stream.Collectors;
 
 public class ImageProcessing extends PApplet {
 
-    PImage img1;
-    Capture cam;
-    PImage buffer1;
+    PImage img;
+    PImage buffer;
 
-
-    private static final boolean webcam = false;
 
     public void settings() {
         size(800 * 3, 600);
     }
 
     public void setup() {
-        if (webcam) {
-            String[] cameras = Capture.list();
-            if (cameras.length == 0) {
-                println("There are no cameras available for capture.");
-                exit();
-            } else {
-                println("Available cameras:");
-                for (String camera : cameras) {
-                    println(camera);
-                }
-                cam = new Capture(this, cameras[0]);
-                cam.start();
-            }
-        } else {
-            img1 = loadImage("board1.jpg");
+        img = loadImage("board3.jpg");
 
-            buffer1 = createImage(img1.width, img1.height, RGB);
+        buffer = createImage(img.width, img.height, RGB);
 
-            noLoop();
-        }
+        noLoop();
     }
 
     public void draw() {
-        if (webcam) {
-            if (cam.available()) {
-                cam.read();
-            }
-            img1 = cam.get();
-            image(img1, 0, 0);
-        } else {
-            image(img1, 0, 0);
-            computeAndDraw(img1, buffer1, this);
-        }
+        image(img, 0, 0);
+        computeAndDraw(img, buffer, this);
     }
 
 
@@ -88,7 +62,7 @@ public class ImageProcessing extends PApplet {
                 .andThen(DrawEffects.drawPixels(ctx, buffer, 1600, 0))
                 .andThen(new HoughTransformation(0.06f, 2.5f, img.width, img.height))
                 .andThen(DrawEffects.drawHough(ctx, 800, 0, 800, 600))
-                .andThen(HoughClusters.mapToClusters(200, 10))
+                .andThen(HoughClusters.mapToClusters(300, 20))
                 .andThen(HoughClusters.selectBestLines(6))
                 .andThen(DrawEffects.drawLineArray(ctx, 0, img.width))
                 .andThen(ls -> ls.stream().map(p -> new PVector(p._1(), p._2())).collect(Collectors.toList()))

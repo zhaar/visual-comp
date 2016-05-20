@@ -1,5 +1,6 @@
 package ch.epfl.visualComputing.Transformations.Effects;
 
+import ch.epfl.visualComputing.Quad;
 import ch.epfl.visualComputing.Transformations.CopeOut.MyList;
 import ch.epfl.visualComputing.Transformations.CopeOut.Pair;
 import ch.epfl.visualComputing.Transformations.HoughTransformation;
@@ -71,16 +72,15 @@ public class DrawEffects {
     }
 
     public static EffectFunction<List<List<PVector>>> drawQuads(PApplet ctx) {
-        return new EffectFunction<>(ls -> {
-            ls.forEach(quad -> {
-                quad.forEach(intersection -> ctx.ellipse(intersection.x, intersection.y, 30, 30));
-                Random random = new Random();
-                ctx.fill(ctx.color(PApplet.min(255, random.nextInt(300)),
-                        PApplet.min(255, random.nextInt(300)),
-                        PApplet.min(255, random.nextInt(300)), 50));
-                ctx.quad(quad.get(0).x,quad.get(0).y,quad.get(1).x,quad.get(1).y,quad.get(2).x,quad.get(2).y,quad.get(3).x,quad.get(3).y);
-            });
-        });
+        return new EffectFunction<>(ls -> ls.forEach(quad -> {
+            quad.forEach(intersection -> ctx.ellipse(intersection.x, intersection.y, 30, 30));
+            System.out.println("drawing quad: " + quad);
+            Random random = new Random();
+            ctx.fill(ctx.color(PApplet.min(255, random.nextInt(300)),
+                    PApplet.min(255, random.nextInt(300)),
+                    PApplet.min(255, random.nextInt(300)), 50));
+            ctx.quad(quad.get(0).x,quad.get(0).y,quad.get(1).x,quad.get(1).y,quad.get(2).x,quad.get(2).y,quad.get(3).x,quad.get(3).y);
+        }));
     }
 
     // copy pasted code from class
