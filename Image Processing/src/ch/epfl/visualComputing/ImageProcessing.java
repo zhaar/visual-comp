@@ -17,32 +17,33 @@ import java.util.function.Function;
 public class ImageProcessing extends PApplet {
 
     PImage buffer;
-    PImage mv;
+    private final Movie mv;
 
     private PVector rotation;
+
+    public ImageProcessing(String mvPath) {
+        super();
+        this.mv = new Movie(this, mvPath);
+    }
 
     public void settings() {
         size(640 * 3, 480);
     }
 
     public void setup() {
-        mv = loadImage("board3.jpg");
-        mv.resize(640, 480);
+//        mv = loadImage("board3.jpg");
+//        mv.resize(640, 480);
 
 //        thresholdBar = new HScrollbar(this, 0, 0 , 800, 20);
-//        mv = new Movie(this, "/Users/zephyz/Projects/processing/videotest/data/testvideo.mp4");
-//        mv.play();
-//        mv.loop();
+//        mv = new Movie(this, moviePath);
+        mv.play();
+        mv.loop();
         buffer = createImage(640, 480, RGB);
-        noLoop();
     }
 
     public void draw() {
         if (mv.width * mv.height != 0)
             computeAndDraw(mv, buffer, this);
-//        thresholdBar.display();
-//        thresholdBar.update();
-//        image(mv, 0, 0);
     }
 
     public void movieEvent(Movie m) {
@@ -68,7 +69,6 @@ public class ImageProcessing extends PApplet {
             int smallestPosition = list.indexOf(smallest);
             List<PVector> ordered = shiftLeft(list, smallestPosition);
             PVector angles = new TwoDThreeD(width, height).get3DRotations(ordered);
-            System.out.println("angles: "+angles.mult(90));
             return angles;
         };
     }
@@ -78,8 +78,6 @@ public class ImageProcessing extends PApplet {
     }
 
     public void computeAndDraw(PImage img, PImage buffer, PApplet ctx) {
-
-        System.out.println("image size: " + img.width + ", " + img.height);
         List<Integer> sourcePixels = DepressingJava.toIntList(img.pixels);
         ImageTransformation<Float, Float> blur = Convolution.gaussianBlur(img.width, img.height);
 
