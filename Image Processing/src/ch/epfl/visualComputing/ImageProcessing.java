@@ -3,7 +3,6 @@ package ch.epfl.visualComputing;
 import ch.epfl.visualComputing.Transformations.*;
 import ch.epfl.visualComputing.Transformations.CopeOut.DepressingJava;
 import ch.epfl.visualComputing.Transformations.Effects.DrawEffects;
-import ch.epfl.visualComputing.Transformations.Effects.EffectFunction;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PVector;
@@ -19,6 +18,9 @@ public class ImageProcessing extends PApplet {
 
     PImage buffer;
     PImage mv;
+
+    private PVector rotation;
+
     public void settings() {
         size(640 * 3, 480);
     }
@@ -45,18 +47,6 @@ public class ImageProcessing extends PApplet {
 
     public void movieEvent(Movie m) {
         m.read();
-    }
-
-    public static Function<List<Integer>, List<Float>> filter(PApplet ctx) {
-        return new PixelTransformer<>((Function<Integer, Float>) p -> {
-            float b = ctx.brightness(p);
-            float h = ctx.hue(p);
-            float s = ctx.saturation(p);
-            return  86 < s && s < 200
-                    && 70 < h && h < 132
-                    && 106 < b && b < 153
-                    ? 255f : 0f;
-        });
     }
 
     private static <T> List<T> shiftLeft(List<T> ls, int c) {
@@ -93,14 +83,8 @@ public class ImageProcessing extends PApplet {
         List<Integer> sourcePixels = DepressingJava.toIntList(img.pixels);
         ImageTransformation<Float, Float> blur = Convolution.gaussianBlur(img.width, img.height);
 
-//        float upper = 255 * this.thresholdBar.getPos();
-//        System.out.println("threshold: " + upper);
-//        Function<List<Integer>,List<Float>> filtered = filter(ctx);
-        //hue ranges: 112 - 133 or 70 - 144
-        //brightness ranges: 0 - 153
-
         ctx.image(img, 0, 0);
-        Threshold.customFilter(ctx).andThen(blur)
+        Optional<PVector> rot = Threshold.customFilter(ctx).andThen(blur)
                 .andThen(Convolution.sobelDoubleConvolution(img.width, img.height))
                 .andThen(DrawEffects.drawPixels(ctx, buffer, img.width * 2, 0))
                 .andThen(new HoughTransformation(0.06f, 2.5f, img.width, img.height))
@@ -114,5 +98,10 @@ public class ImageProcessing extends PApplet {
                 .andThen(ImageProcessing::fst)
                 .andThen(o -> o.map(ComputeAngles(img.width, img.height)))
                 .apply(sourcePixels);
+        this.rotation = rot.orElse(this.rotation);
+    }
+
+    public PVector getRotation() {
+        return this.rotation;
     }
 }
