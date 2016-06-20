@@ -11,5 +11,6 @@
     <orderEntry type="library" name="java" level="project" />
     <orderEntry type="library" name="video" level="project" />
     <orderEntry type="library" name="library1" level="project" />
+    <orderEntry type="library" name="papaya" level="project" />
   </component>
 </module>
