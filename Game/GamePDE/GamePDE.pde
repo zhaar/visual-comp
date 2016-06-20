@@ -1,18 +1,24 @@
 import ch.epfl.visualComputing.ImageProcessing;
+import processing.video.Movie;
 
 void settings() {
       size(600, 600, P3D);
 }
 
+Movie mv;
 ImageProcessing proc;
 GameState state = new GameState(300);
 Ball ball = new Ball(20);
 
 void setup() {
   noStroke();
-  proc = new ImageProcessing("/Users/zephyz/Projects/processing/videotest/data/testvideo.mp4");
+  mv = new Movie(this, "/Users/zephyz/Projects/processing/videotest/data/testvideo.mp4");
+  mv.play();
+  mv.loop();
+  proc = new ImageProcessing();
+  proc.setImage(mv);
   String[] args = { "Image processing window"};
-  //PApplet.runSketch(args, proc);
+  PApplet.runSketch(args, proc);
   ball.setPosition(new PVector(150, 150));
 
 }
@@ -77,6 +83,9 @@ Ball updateBallState(GameState s, Ball b) {
   b.setPosition(b.getPosition().add(b.getVelocity()));
   return b;
 }
+void movieEvent(Movie m) {
+  m.read();
+}
 
 void draw() {
   background(200);
@@ -86,9 +95,12 @@ void draw() {
     updateBallState(state, ball);
   }
   state.draw(ball);
+  proc.setImage(mv);
   PVector angle = proc.getRotation();
-  state.setAngleX(clampAngle(angle.x));
-  state.setAngleY(clampAngle(angle.y));
+  if (angle != null) {
+    state.setAngleX(clampAngle(angle.x));
+    state.setAngleY(clampAngle(angle.y));
+  }
 }
 
 void placeObject(GameState s, float x, float y) {

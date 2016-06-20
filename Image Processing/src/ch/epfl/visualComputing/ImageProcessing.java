@@ -31,11 +31,6 @@ public class ImageProcessing extends PApplet {
     }
 
     public void setup() {
-//        mv = loadImage("board3.jpg");
-//        mv.resize(640, 480);
-
-//        thresholdBar = new HScrollbar(this, 0, 0 , 800, 20);
-//        mv = new Movie(this, moviePath);
         mv.play();
         mv.loop();
         buffer = createImage(640, 480, RGB);
