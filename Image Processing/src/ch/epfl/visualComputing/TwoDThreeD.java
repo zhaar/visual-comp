@@ -21,10 +21,10 @@ class TwoDThreeD {
 
     // the 3D coordinates of the physical board corners, clockwise
     float [][] physicalCorners = {
-            // TODO:
-            // Store here the 3D coordinates of the corners of
-            // the real Lego board, in homogenous coordinates
-            // and clockwise.
+            {-128,-128, 0, 1}, //topleft
+            { 128,-128, 0, 1}, //topright
+            { 128, 128, 0, 1}, //botright
+            {-128, 128, 0, 1}  //botleft
     };
 
     public TwoDThreeD(int width, int height) {
@@ -35,7 +35,7 @@ class TwoDThreeD {
 
     }
 
-    PVector get3DRotations(List<PVector> points2D) {
+    public PVector get3DRotations(List<PVector> points2D) {
 
         // 1- Solve the extrinsic matrix from the projected 2D points
         double[][] E = solveExtrinsicMatrix(points2D);
@@ -67,7 +67,7 @@ class TwoDThreeD {
     }
 
 
-    double[][] solveExtrinsicMatrix(List<PVector> points2D) {
+    private double[][] solveExtrinsicMatrix(List<PVector> points2D) {
 
         // p ~= K · [R|t] · P
         // with P the (3D) corners of the physical board, p the (2D)
@@ -86,6 +86,9 @@ class TwoDThreeD {
             // store in projectedCorners the result of (K^(-1) · p), for each
             // corner p found in the webcam image.
             // You can use Mat.multiply to multiply a matrix with a vector.
+            PVector p = points2D.get(i);
+            float[] point = {p.x, p.y, 1};
+            projectedCorners[i] = Mat.multiply(invK, point);
         }
 
         // 'A' contains the cross-product (K^(-1) · p) X P
@@ -147,7 +150,7 @@ class TwoDThreeD {
 
     }
 
-    PVector rotationFromMatrix(float[][]  mat) {
+    private PVector rotationFromMatrix(float[][]  mat) {
 
         // Assuming rotation order is around x,y,z
         PVector rot = new PVector();

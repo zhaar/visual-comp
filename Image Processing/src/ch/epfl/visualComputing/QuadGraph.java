@@ -25,7 +25,6 @@ public class QuadGraph {
             for (int j = i + 1; j < lines.size(); j++) {
                 if (intersect(lines.get(i), lines.get(j), width, height)) {
 
-                    System.out.println("line: " + lines.get(i) + " intersects with " + lines.get(j));
                     graph[idx][0] = i;
                     graph[idx][1] = j;
 

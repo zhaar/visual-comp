@@ -72,7 +72,6 @@ public class DrawEffects {
     public static EffectFunction<List<List<PVector>>> drawQuads(PApplet ctx) {
         return new EffectFunction<>(ls -> ls.forEach(quad -> {
             quad.forEach(intersection -> ctx.ellipse(intersection.x, intersection.y, 30, 30));
-            System.out.println("drawing quad: " + quad);
             Random random = new Random();
             ctx.fill(ctx.color(PApplet.min(255, random.nextInt(300)),
                     PApplet.min(255, random.nextInt(300)),

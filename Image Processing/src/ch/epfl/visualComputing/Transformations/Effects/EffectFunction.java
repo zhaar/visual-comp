@@ -16,4 +16,8 @@ public class EffectFunction<A> implements Function<A, A> {
         effect.accept(a);
         return a;
     }
+
+    public static <T> EffectFunction<T> println(String message) {
+        return new EffectFunction<>(a ->  System.out.println(message + a));
+    }
 }
